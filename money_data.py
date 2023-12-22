@@ -22,7 +22,7 @@ categories = {
 }
 
 # 創建一個空的 DataFrame 來存儲結果
-result_df = pd.DataFrame(columns=["交易活動","關鍵字", "支出", "存入", "次數"])
+result_df = pd.DataFrame(columns=["交易活動","關鍵字", "支出", "支出次數", "存入", "存入次數"])
 
 # 使用迴圈處理每個關鍵字
 for category,keywords in categories.items():
@@ -34,17 +34,24 @@ for category,keywords in categories.items():
         # 計算支出和存入的總和
         total_expense = selected_data["支出"].sum()
         total_income = selected_data["存入"].sum()
+        
+        # 初始化支出和存入的次數
+        expense_occurrences = 0        
+        income_occurrences = 0
         # 計算出現的次數
-        occurrences = len(selected_data)
+        expense_occurrences += selected_data["支出"].count() if total_expense > 0 else 0
+        income_occurrences += selected_data["存入"].count() if total_income > 0 else 0
     
         # 將結果追加到結果 DataFrame
         result_df = result_df.append({
             "交易活動": category,
             "關鍵字": keyword,
             "支出": total_expense,
+            "支出次數": expense_occurrences,
             "存入": total_income,
-            "次數": occurrences
+            "存入次數": income_occurrences
         }, ignore_index=True)
 
 # 顯示最終的結果
 print(result_df)
+result_df.to_csv("result_df.csv", index=False)

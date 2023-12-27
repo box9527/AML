@@ -1,0 +1,10 @@
+# if you want to use 'tabula.read_pdf', you need to lock on 2.7.0
+# otherwise, you need to use 'from tabula.io import read_pdf; read_pdf(...)' to instead of 'tabula.read_pdf'
+tabula-py==2.9.0
+tabula==1.0.5
+# use textrank4zh
+# try to fix "AttributeError: module 'networkx' has no attribute 'from_numpy_matrix'" issue
+networkx==2.8.8
+scipy==1.11.4
+jieba==0.42.1
+rapidfuzz==3.6.0

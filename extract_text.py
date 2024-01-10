@@ -15,12 +15,20 @@ for page_df in df:
     if not page_df.empty:
         # 從第二行開始合併
         page_df = page_df.iloc[1:]
-
         # 將 DataFrame 合併到結果中
         all_df = pd.concat([all_df, page_df], ignore_index=True)
 
+# 遍歷整個 DataFrame
+for index, row in all_df.iterrows():
+    # 檢查第 15 或第 16 欄位是否為空值
+    if pd.notna(row[15]):
+        all_df.iloc[index, 13] = row[15]
+    elif len(row) > 16 and pd.notna(row[16]):
+        all_df.iloc[index, 13] = row[16]
+    else:
+        pass
+
 # 前15個欄位
 result_df = all_df.iloc[:, :15]
-
 # 將 DataFrame 寫入 CSV
-result_df.to_csv("客戶備註很多output.csv", index=False, header = columns)
+result_df.to_csv("客戶備註很多完整版.csv", index=False, header = columns)

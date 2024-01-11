@@ -18,6 +18,7 @@ def try_or(func, default=None, expected_exc=(Exception,)):
 def stylize_df(s):
     return "font-weight: normal; text-align: center; vertical-align: middle;"
 
+@lru_cache()
 def resource_path(relative_path):
     try:
         base_path = sys._MEIPASS
@@ -25,3 +26,13 @@ def resource_path(relative_path):
         base_path = os.environ.get("_MEIPASS2", os.path.abspath("."))
 
     return os.path.join(base_path, relative_path)
+
+def isfile(path):
+    bfile = False
+    try:
+        if os.path.isfile(path):
+            bfile = True
+    except:
+        pass
+
+    return bfile

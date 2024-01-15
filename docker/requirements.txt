@@ -20,3 +20,5 @@ jpype1
 pyinstaller==6.3.0
 textrank4zh
 pandas
+# gui
+customtkinter==5.2.2

@@ -332,4 +332,3 @@ if __name__ == '__main__':
     if bsuccess == False:
         logger.critical('Keywords procedure is failed.')
 
-    exit()

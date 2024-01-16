@@ -19,9 +19,10 @@ class PDFProcessor:
 
         all_df = pd.concat(self.temp_dfs, ignore_index=True)
         all_df = self.drop_unnamed_columns(all_df)
-
-        output_csv = f"{os.path.splitext(self.pdf_path)[0]}.csv"
-        all_df.to_csv(output_csv, index=False)
+        
+        return all_df
+        #output_csv = f"{os.path.splitext(self.pdf_path)[0]}.csv"
+        #all_df.to_csv(output_csv, index=False)
 
     def process_page(self, page_df):
         page_df = page_df.iloc[1:]

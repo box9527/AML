@@ -58,8 +58,3 @@ class PDFProcessor:
         # 刪除 Unnamed 欄位'
         df = df.drop(df.columns[df.columns.str.contains('Unnamed:')], axis=1)
         return df
-
-if __name__ == "__main__":
-    source_file = "客戶備註很多.pdf"
-    pdf_processor = PDFProcessor(source_file)
-    pdf_processor.process_pdf()

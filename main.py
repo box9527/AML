@@ -1,4 +1,6 @@
 import os
+import glob
+import time
 import pandas as pd
 from extract_text import PDFProcessor
 from txtrank_v2 import TextRankSummarization
@@ -29,7 +31,11 @@ def process_data(input_df, output_csv):
     return df, remark_dict_max
 
 if __name__ == "__main__":
-    source_file = "許多備註.pdf"
+    start_time = time.time()
+    
+    #source_file = "交易備註例1.pdf"
+    pdf_folder = "./doc"
+    source_file =glob.glob(f"{pdf_folder}/*.pdf")[0]
     pdf_processor = PDFProcessor(source_file)
     all_df = pdf_processor.process_pdf()
     trs = TextRankSummarization()
@@ -37,3 +43,7 @@ if __name__ == "__main__":
     processed_df, remark_dict_max = process_data(all_df, output_file)
     print("最佳選擇", remark_dict_max)
     print("最佳選擇總共可分為",len(remark_dict_max),"類分群")
+
+    end_time = time.time()
+    elapsed_time = end_time - start_time
+    print(f"程式執行時間: {elapsed_time} 秒")

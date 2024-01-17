@@ -34,7 +34,7 @@ if __name__ == "__main__":
     start_time = time.time()
     
     #source_file = "交易備註例1.pdf"
-    pdf_folder = "./doc"
+    pdf_folder = "./docs"
     source_file =glob.glob(f"{pdf_folder}/*.pdf")[0]
     pdf_processor = PDFProcessor(source_file)
     all_df = pdf_processor.process_pdf()

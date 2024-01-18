@@ -2,11 +2,19 @@ import os
 import glob
 import time
 import pandas as pd
+import tkinter as tk
 from extract_text import PDFProcessor
 from txtrank_v2 import TextRankSummarization
 from collections import Counter
+from gui import GUIApp
 
-def process_data(input_df, output_csv):
+source_file = None
+
+def set_source_file(file_path):
+    global source_file
+    source_file = file_path
+
+def process_data(input_df, output_csv, source_file):
     df = input_df.fillna(0)
     result_df = pd.DataFrame(columns=['備註', '2字關鍵字', '3字關鍵字'])
 
@@ -26,21 +34,21 @@ def process_data(input_df, output_csv):
     count_max = Counter(df['最佳選擇'].explode())
     remark_dict_max = dict(count_max)
     
-    # 保存 DataFrame 到 CSV 檔案
-    #df.to_csv(output_csv, index=False)
     return df, remark_dict_max
 
 if __name__ == "__main__":
     start_time = time.time()
-    
-    #source_file = "交易備註例1.pdf"
-    pdf_folder = "./docs"
-    source_file =glob.glob(f"{pdf_folder}/*.pdf")[0]
+
+    root = tk.Tk()
+    gui_app = GUIApp(root)
+    gui_app.run_gui()
+    source_file = gui_app.source_file
+
     pdf_processor = PDFProcessor(source_file)
     all_df = pdf_processor.process_pdf()
     trs = TextRankSummarization()
-    output_file = f"{os.path.splitext(source_file)[0]}_processed.csv"
-    processed_df, remark_dict_max = process_data(all_df, output_file)
+    output_file = f"processed.csv"
+    processed_df, remark_dict_max = process_data(all_df, output_file, source_file)
     print("最佳選擇", remark_dict_max)
     print("最佳選擇總共可分為",len(remark_dict_max),"類分群")
 

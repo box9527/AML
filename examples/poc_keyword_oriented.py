@@ -3,14 +3,27 @@
 # @carl9527
 
 
+import time
+import os, sys
 import os.path as path
 from loguru import logger
 import copy
 import re
 import pandas as pd
 import numpy as np
+import shutil
+from openpyxl import Workbook
+import xlrd
+from xlutils.copy import copy as xl_copy
 from txtrank_summary import TextRankSummarization
-from utils import try_or, stylize_df, isfile
+from utils import (
+        try_or,
+        stylize_df,
+        isfile,
+        resource_path,
+        add_sheets_and_fill_data_to_xlsm,
+        add_sheet_fill_and_merge_to_xlsm
+)
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 import tabula
@@ -20,26 +33,39 @@ class Productivity:
     def __init__(self):
         self.source = 'source-tool7.pdf'
         self.tool7 = 'source-tool7.xlsm'
+        self.tool8 = 'poc-tool8.xlsm'
+        self.tool8_tmpl = 'poc_tool8_template.xlsm'
 
         # checkpoints
         self.cp_rawdata = 'rawdata-tool8.xlsx'
         self.cp_strict_rawdata = 'rawdata-strict-tool8.xlsx'
+        self.cp_atmdata = 'atmdata-tool8.xlsx'
+        self.cp_branchdata = 'branchdata-tool8.xlsx'
         self.cp_intermediate = 'middle-tool8.xlsx' 
         self.cp_result = 'result-tool8.xlsx'
+        #self.cp_combined_result = 'poc_tool8.xlsm'
+        self.cp_combined_result = '【工具8】異常態樣分析摘要.xlsm'
+        #self.cp_combined_result = '【工具8】異常態樣分析摘要_v0.82.xlsm'
+
+        self._export_excels = False
 
         # variables
         self.tool7_rawdata_sheet = '原始資料'
         self.tool7_atm_sheet = 'Report_MachineManage'
+        self.tool7_branch_sheet = '分行清單'
         # 這裡的 "支出" 與 "存入" 用 "Out" 以及 "In"取代，目的是跟工具七的欄位一致
         self.rawdata_cols = {
             '交易日期':[],'帳務日期':[],'交易代號':[],'交易時間':[],'交易分行':[],'交易櫃員':[],
             '摘要':[],'Out':[],'In':[],'餘額':[],
-            '轉出入帳號':[],'合作機構':[],'金資序號':[],'票號':[],'備註':[],'註記':[]}
+            '轉出入帳號':[],'合作機構/會員編號':[],'金資序號':[],'票號':[],'備註':[],'註記':[]}
 
         self.strict_cols = {
             '交易日期':[],'帳務日期':[],'交易代號':[],'交易時間':[],'交易分行':[],'交易櫃員':[],
             '摘要':[],'支出':[],'存入':[],'餘額':[],
-            '轉出入帳號':[],'合作機構':[],'備註':[]}
+            '轉出入帳號':[],'合作機構/會員編號':[],'備註':[]}
+
+        self.branch_cols = {
+            '分行代號':[],'分行代號1':[],'分行代號2':[],'分行名稱':[],'所在縣市':[],'地區':[]}
 
         self.mid_cols = {
             '關鍵字':[],'備註':[],'摘要':[],'交易日期':[],'交易時間':[],
@@ -64,6 +90,9 @@ class Productivity:
         bsuccess, atmdata = self._atm_from_tool7()
         if bsuccess == False: return bsuccess
 
+        bsuccess, branchdata = self._branch_from_tool7()
+        if bsuccess == False: return bsuccess
+
         # checkpoint 2
         bsuccess, strict_rawdata = self._strict_from_rawdata(rawdata)
         if bsuccess == False: return bsuccess
@@ -76,8 +105,44 @@ class Productivity:
         if bsuccess == False: return bsuccess
 
         bsuccess = True
-        logger.info('Keywords procedure is success.')
+        logger.info('Main procedure is success.')
+
+        self._combine_product(
+                raw_data=rawdata, atm_data=atmdata, branch_data=branchdata,
+                keywords_data=sorted_middata)
+
         return bsuccess
+
+    def _combine_product(self, 
+            raw_data: pd.DataFrame=None, atm_data: pd.DataFrame=None, 
+            branch_data: pd.DataFrame=None, keywords_data: pd.DataFrame=None):
+        shutil.copy(resource_path(self.tool8_tmpl), self.cp_combined_result)
+
+        real_result = f"{os.path.dirname(sys.executable)}\\{self.cp_combined_result}"
+
+        # 定義 sheet 名稱及對應的 DataFrame
+        sheet_data_dict = {
+            #"Sheet1": pd.DataFrame({'Column1': [1, 2, 3], 'Column2': ['A', 'B', 'C']}),
+            #"Sheet2": pd.DataFrame({'Column1': [4, 5, 6], 'Column2': ['D', 'E', 'F']}),
+            # 可以根據需要繼續添加
+            "關鍵字分析": keywords_data,
+            "分行清單": branch_data,
+            "ATM清單": atm_data,
+            "原始資料": raw_data,
+        }
+
+        sheet_strcol_dict = {
+            "關鍵字分析": [1, 2, 3, 6, 7, 8],
+            "分行清單": [1, 3],
+            "ATM清單": [1, 2, 3, 7],
+            "原始資料": [3, 5, 6, 11, 12, 13, 14, 15, 16],
+        }
+
+        # 呼叫函數，在 xlsm 檔案的最前頭新增多個新 sheet，並填入對應的 DataFrame 數據
+        add_sheets_and_fill_data_to_xlsm(real_result, sheet_data_dict, sheet_strcol_dict)
+
+        time.sleep(10)
+        return
 
     def _final_product(self, sorted_data: pd.DataFrame=None) -> (bool, pd.DataFrame):
         bsuccess = False
@@ -104,13 +169,15 @@ class Productivity:
 
             exportx = export.copy(deep=True)
             exportx = exportx.replace(np.nan, '', regex=True)
-            (
-                pd.DataFrame([exportx.to_dict('list')])
-                    .apply(pd.Series.explode)
-                    .pivot_table(index=headers, sort=False)
-                    .style.applymap_index(stylize_df)
-                    .to_excel(self.cp_result, startrow=-1)
-            )
+
+            if self._export_excels == True:
+                (
+                    pd.DataFrame([exportx.to_dict('list')])
+                        .apply(pd.Series.explode)
+                        .pivot_table(index=headers, sort=False)
+                        .style.applymap_index(stylize_df)
+                        .to_excel(self.cp_result, startrow=-1)
+                )
             bsuccess = True
         except:
             logger.debug('Create final_product failed.')
@@ -177,8 +244,10 @@ class Productivity:
                     exportx.loc[len(exportx.index)] = temp.iloc[0].tolist()
 
             exportx = exportx.replace(np.nan, '', regex=True)
-            with pd.ExcelWriter(self.cp_intermediate) as writer:
-                exportx.to_excel(writer, sheet_name="Keywords", index=False)
+
+            if self._export_excels == True:
+                with pd.ExcelWriter(self.cp_intermediate) as writer:
+                    exportx.to_excel(writer, sheet_name="Keywords", index=False)
             bsuccess = True
         except:
             logger.debug('Create intermediate_product failed.')
@@ -202,6 +271,64 @@ class Productivity:
             export['ID1'], export['剖析'], export['代碼(記事本)'] = zip(*export.apply(atm_formatting, axis=1))
             exportx = export.copy(deep=True)
             exportx = exportx.replace(np.nan, '', regex=True)
+
+            if self._export_excels == True:
+                with pd.ExcelWriter(self.cp_atmdata) as writer:
+                    exportx.to_excel(writer, sheet_name="ATMdata", index=False)
+            bsuccess = True
+        except:
+            logger.debug('Extract ATM information from tool7 failed.')
+            pass
+
+        return bsuccess, exportx
+
+    def _branch_from_tool7(self) -> (bool, pd.DataFrame):
+        bsuccess = False
+        exportx = None
+        def branch_formatting(row, headers):
+            branch_code = str(row[headers[0]]).strip("''").strip()
+            try:
+                int(branch_code)
+            except:
+                branch_code = ''
+                pass
+
+            branch_code1 = try_or(lambda:f"{branch_code:04d}",default=f"{branch_code}")
+            branch_code2 = try_or(lambda:f"{row[1]}",default=f"{row[1]}")
+            branch_code3 = try_or(lambda:f"{row[2]}",default=f"{row[2]}")
+            branch_name = try_or(lambda:f"{row[headers[3]]}",default=f"{row[headers[3]]}")
+            branch_place = try_or(lambda:f"{row[headers[4]]}",default=f"{row[headers[4]]}")
+            branch_area = try_or(lambda:f"{row[headers[5]]}",default=f"{row[headers[5]]}")
+
+            if len(branch_code1) <= 0:
+                branch_code1, branch_code2, branch_code3, branch_name, branch_place, branch_area = \
+                        '', '', '', '', '', ''
+
+            return branch_code1, branch_code2, branch_code3, branch_name, branch_place, branch_area
+
+        try:
+            # 這個是從 工具七 裡讀出 "Report_MachineManage" 頁
+            export = pd.read_excel(self.tool7, sheet_name=self.tool7_branch_sheet, skiprows=-1)
+            export = export.replace(np.nan, '', regex=True)
+
+            export.columns = export.columns.str.split('\\n').str[0]
+            headers = export.columns.values.tolist()
+            end_idx = headers.index('地區') # we only keep value of columns til this index
+            headers = headers[:end_idx+1]
+
+            export1 = pd.DataFrame.from_dict( self.branch_cols )
+
+            export1['分行代號'], export1['分行代號1'], export1['分行代號2'], \
+            export1['分行名稱'], export1['所在縣市'], export1['地區'] \
+            = zip(*export.apply(lambda x: branch_formatting(x, headers), axis=1))
+
+            export1.dropna(inplace=True)
+            exportx = export1.copy(deep=True)
+            exportx = exportx.replace(np.nan, '', regex=True)
+
+            if self._export_excels == True:
+                with pd.ExcelWriter(self.cp_branchdata) as writer:
+                    exportx.to_excel(writer, sheet_name="Branchdata", index=False)
             bsuccess = True
         except:
             logger.debug('Extract ATM information from tool7 failed.')
@@ -224,7 +351,7 @@ class Productivity:
             m_in = try_or(lambda:f"{row['In']:,.2f}",default=f"{row['In']}")
             m_balance = try_or(lambda:f"{row['餘額']:,.2f}",default=f"{row['餘額']}")
             tr_acc = try_or(lambda:f"{row['轉出入帳號']}".strip(),default=f"{row['轉出入帳號']}")
-            tr_infra = try_or(lambda:f"{row['合作機構']}".strip(),default=f"{row['合作機構']}")
+            tr_infra = try_or(lambda:f"{row['合作機構/會員編號']}".strip(),default=f"{row['合作機構/會員編號']}")
             comment = f"{row['備註']}".strip()
 
             return deal_date, acc_date, deal_code, deal_time, deal_branch, deal_teller, \
@@ -238,7 +365,7 @@ class Productivity:
             export['交易日期'], export['帳務日期'], export['交易代號'],\
             export['交易時間'], export['交易分行'], export['交易櫃員'],\
             export['摘要'], export['支出'], export['存入'],\
-            export['餘額'], export['轉出入帳號'], export['合作機構'],\
+            export['餘額'], export['轉出入帳號'], export['合作機構/會員編號'],\
             export['備註'] \
             = zip(*rawdata.apply(rawdata_formatting, axis=1))
 
@@ -248,8 +375,10 @@ class Productivity:
 
             exportx = export.copy(deep=True)
             exportx = exportx.replace(np.nan, '', regex=True)
-            with pd.ExcelWriter(self.cp_strict_rawdata) as writer:
-                exportx.to_excel(writer, sheet_name="Rawdata", index=False)
+
+            if self._export_excels == True:
+                with pd.ExcelWriter(self.cp_strict_rawdata) as writer:
+                    exportx.to_excel(writer, sheet_name="Rawdata", index=False)
             bsuccess = True
         except:
             logger.debug('Strict rawdata failed.')
@@ -314,8 +443,10 @@ class Productivity:
 
             exportx = export.copy(deep=True)
             exportx = exportx.replace(np.nan, '', regex=True)
-            with pd.ExcelWriter(self.cp_rawdata) as writer:
-                exportx.to_excel(writer, sheet_name="Rawdata", index=False)
+
+            if self._export_excels == True:
+                with pd.ExcelWriter(self.cp_rawdata) as writer:
+                    exportx.to_excel(writer, sheet_name="Rawdata", index=False)
             bsuccess = True
         except:
             logger.debug('Extract rawdata from PDF failed.')
@@ -330,5 +461,5 @@ if __name__ == '__main__':
     product = Productivity()
     bsuccess = product.output(source, tool7)
     if bsuccess == False:
-        logger.critical('Keywords procedure is failed.')
+        logger.critical('Main procedure is failed.')
 

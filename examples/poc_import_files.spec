@@ -17,7 +17,8 @@ a = Analysis(
     noarchive=False,
 )
 a.datas += [
-    ('stop_words.txt', 'stop_words.txt', 'DATA')
+    ('stop_words.txt', 'stop_words.txt', 'DATA'),
+    ('poc_tool8_template.xlsm', 'poc_tool8_template.xlsm', 'DATA')
 ]
 pyz = PYZ(a.pure)
 

@@ -1,10 +1,21 @@
-import re
+import re, os
 import pandas as pd
 from collections import Counter
 from textrank4zh import TextRank4Keyword
 import sys
+import os,sys
 
-STOPWORDS = 'stop_wordsv2.txt'
+def resource_path(relative_path):
+    try:
+        # 如果是打包後的可執行文件
+        base_path = sys._MEIPASS
+    except Exception:
+        # 如果是直接執行的腳本
+        base_path = os.path.abspath(".")
+
+    return os.path.join(base_path, relative_path)
+#STOPWORDS = 'stop_wordsv2.txt'
+STOPWORDS = resource_path('stop_wordsv2.txt')
 
 class TextRankSummarization():
     def __init__(self):

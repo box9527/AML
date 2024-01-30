@@ -47,6 +47,16 @@ def isfile(path):
 
     return bfile
 
+def isdir(path):
+    bdir = False
+    try:
+        if os.path.isdir(path):
+            bdir = True
+    except:
+        pass
+
+    return bdir
+
 def add_sheets_and_fill_data_to_xlsm(xlsm_file, sheet_data_dict, sheet_strcol_dict):
     # 使用 pywin32 開啟 Excel 應用程式
     excel_app = win32.gencache.EnsureDispatch('Excel.Application')

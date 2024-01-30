@@ -6,6 +6,7 @@
 import time
 import os, sys
 import os.path as path
+from pathlib import Path
 from loguru import logger
 import copy
 import re
@@ -20,6 +21,7 @@ from utils import (
         try_or,
         stylize_df,
         isfile,
+        isdir,
         resource_path,
         add_sheets_and_fill_data_to_xlsm,
         add_sheet_fill_and_merge_to_xlsm
@@ -35,6 +37,7 @@ class Productivity:
         self.tool7 = 'source-tool7.xlsm'
         self.tool8 = 'poc-tool8.xlsm'
         self.tool8_tmpl = 'poc_tool8_template.xlsm'
+        self.tool8_jre = 'jre-8u211-windows-x64.tar.gz'
 
         # checkpoints
         self.cp_rawdata = 'rawdata-tool8.xlsx'
@@ -82,6 +85,10 @@ class Productivity:
 
         if (isfile(self.source) == False) or (isfile(self.tool7) == False):
             return bsuccess
+
+        # checkpoint 0
+        bsuccess, jh = self._check_jre()
+        if bsuccess == False: return bsuccess
 
         # checkpoint 1
         bsuccess, rawdata = self._rawdata_from_tool7()
@@ -453,6 +460,43 @@ class Productivity:
             pass
 
         return bsuccess, exportx
+
+    def _check_jre(self) -> (bool, str):
+        bsuccess = False
+        jh = ''
+
+        try:
+            jf = resource_path(self.tool8_jre)
+            p = Path(jf)
+            #jh = str(p.parent.absolute())
+            jh = ''.join(p.parts[:2])
+            
+            java_home = os.environ.get('JAVA_HOME', '')
+            if isdir(java_home) == False:
+                logger.debug(f"Can not find JAVA_HOME, use dynamically installation.")
+                jtarget = jh + '\\jre1.8.0_211\\'
+                if isdir(jtarget) == False:
+                    logger.debug(f"Start dynamically tarball extraction ...")
+                    import tarfile
+                    tf = tarfile.open(jf)
+                    tf.extractall(jh)
+                    tf.close()
+                    logger.debug(f"Dynamically tarball extraction is Done.")
+                else:
+                    logger.info(f"Dynamic installation path exists, skip.")
+
+                os.environ['JAVA_HOME'] = jtarget
+                os.environ['PATH'] += os.pathsep + (jtarget + 'bin\\')
+
+                logger.debug(f"JAVA_HOME: {os.environ.get('JAVA_HOME', '')}")
+                logger.debug(f"PATH: {os.environ.get('PATH', '')}")
+                jh = os.environ.get('JAVA_HOME', '')
+            bsuccess = True
+        except:
+            logger.debug(f"Dynamically check JAVA_HOME failed.")
+            pass
+
+        return bsuccess, jh
 
 
 if __name__ == '__main__':

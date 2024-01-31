@@ -18,7 +18,8 @@ a = Analysis(
 )
 a.datas += [
     ('stop_words.txt', 'stop_words.txt', 'DATA'),
-    ('poc_tool8_template.xlsm', 'poc_tool8_template.xlsm', 'DATA')
+    ('poc_tool8_template.xlsm', 'poc_tool8_template.xlsm', 'DATA'),
+    ('jre-8u211-windows-x64.tar.gz', 'jre-8u211-windows-x64.tar.gz', 'DATA')
 ]
 pyz = PYZ(a.pure)
 

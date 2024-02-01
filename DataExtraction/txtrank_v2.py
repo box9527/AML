@@ -5,6 +5,7 @@ import pandas as pd
 from collections import Counter
 from textrank4zh import TextRank4Keyword
 from extract_text import PDFProcessor
+from openpyxl import Workbook
 
 def resource_path(relative_path):
     try:
@@ -55,9 +56,7 @@ class TextRankSummarization():
         count_3 = remark_dict_3.get(row['3字關鍵字'], 0)
         return row['2字關鍵字'] if count_2 >= count_3 else row['3字關鍵字']
 
-    def process_data(self, all_df, output_csv, pdf_path):
-        # 這裡你需要根據實際情況調整相依性
-        # trs = TextRankSummarization()
+    def process_data(self, all_df, pdf_path):
         df = all_df.fillna(0)
         result_df = pd.DataFrame(columns=['備註', '2字關鍵字', '3字關鍵字'])
 
@@ -86,12 +85,23 @@ class TextRankSummarization():
         if processed_pdf_paths:
             for pdf_path in processed_pdf_paths:
                 print(f"現在正在分類: {pdf_path} ")
-                output_file = f"{os.path.splitext(pdf_path)[0]}.csv"
-
+                
                 all_df = pdf_processor.process_pdf(pdf_path)
 
-                processed_df, remark_dict_max = self.process_data(all_df, output_file, pdf_path)
-                print("最佳選擇", remark_dict_max)
-                print("最佳選擇總共可分為", len(remark_dict_max), "類分群")
+                processed_df, remark_dict_max = self.process_data(all_df, pdf_path)
+
+                selected_columns = ['最佳選擇', '備註', '摘要', '交易日期', '交易時間', '交易分行', '交易櫃員', 'Out', 'In']
+                selected_columns_df = processed_df[selected_columns]
+                
+                sorted_keys = sorted(remark_dict_max, key=remark_dict_max.get, reverse=True)
+                selected_columns_df = selected_columns_df.copy()
+                selected_columns_df['最佳選擇'] = pd.Categorical(selected_columns_df['最佳選擇'], categories=sorted_keys, ordered=True)
+                sorted_df = selected_columns_df.sort_values(by='最佳選擇')
 
                 pdf_processor.all_df = processed_df
+
+                # 將 原始資料 跟 關鍵字分析 寫入到 Excel 檔案
+                self.output_file = f"{os.path.splitext(pdf_path)[0]}.xlsx"
+                with pd.ExcelWriter(self.output_file) as writer:
+                    all_df.to_excel(writer, sheet_name='原始資料', index=False)
+                    sorted_df.to_excel(writer, sheet_name='關鍵字分析', index=False)

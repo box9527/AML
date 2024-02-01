@@ -2,7 +2,7 @@ import tkinter as tk
 from tkinter import filedialog, messagebox
 from extract_text import PDFProcessor
 import zipfile
-import os
+import os, sys
 import tabula
 from txtrank_v2 import TextRankSummarization
 class GUIApp:
@@ -64,7 +64,11 @@ class GUIApp:
             return
         
         if self.process_zip:  # 如果是壓縮檔，呼叫 extract_file 方法
-            extract_to_path = './pdfs'
+            #extract_to_path = './pdfs'
+            #extract_to_path = '/Users/evon/Documents/pdfs'
+            extract_to_path = os.path.join(os.path.dirname(sys.executable), 'pdfs')
+            if not os.path.exists(extract_to_path):
+                os.makedirs(extract_to_path)
             self.extract_file(extract_to_path)
             self.source_folder = extract_to_path
         else: # 如果是一般檔案，直接使用原始的 source_folder

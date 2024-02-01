@@ -50,9 +50,6 @@ class PDFProcessor:
         all_df = pd.concat(temp_dfs, ignore_index=True)
         all_df = self.drop_unnamed_columns(all_df)
         
-        output_csv = f"{os.path.splitext(pdf_path)[0]}.csv"
-        all_df.to_csv(output_csv, index=False)        
-        
         return all_df.copy()# 使用 copy 創建新的 DataFrame
 
     def process_page(self, page_df):

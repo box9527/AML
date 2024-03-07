@@ -812,7 +812,7 @@ Sub GetVisitedBranch()
                 strKey = CStr(result)
             End If
         
-            wsInt.Cells(RowTask5VisitedBranchKey, i).Value = strKey
+            wsInt.Cells(RowTask5VisitedBranchKey, i).Value = "¤À¦æ¥N½X:" & Format(strKey, "0000")
             wsInt.Cells(RowTask5VisitedBranchValue, i).Value = valuesArray(i)
         
         Next i
@@ -2718,6 +2718,7 @@ Sub CreateBarChart(rowIndex1 As Integer, rowIndex2 As Integer, targetPosition As
     Dim chartObj    As chartObject
     Dim lastCol1    As Integer, lastCol2 As Integer
     Dim dataRange1  As Range, dataRange2 As Range
+    Dim xAxisRange  As Range, yAxisRange As Range
     Dim chartRange  As Range
     Dim wsOut       As Worksheet
     ' Set the worksheet
@@ -2732,10 +2733,14 @@ Sub CreateBarChart(rowIndex1 As Integer, rowIndex2 As Integer, targetPosition As
     Set dataRange2 = ws.Range(ws.Cells(rowIndex2, 1), ws.Cells(rowIndex2, lastCol2))
     ' Combine the data ranges into one range
     Set chartRange = Union(dataRange1, dataRange2)
+    Set xAxisRange = dataRange1 
+    Set yAxisRange = dataRange2 
     ' Create a New chart on the worksheet
     Set chartObj = wsOut.ChartObjects.Add(Left:=targetPosition.Left, Top:=targetPosition.Top, Width:=targetPosition.Width, Height:=targetPosition.Height)
     ' Set the chart data source
     chartObj.Chart.SetSourceData chartRange
+    chartObj.Chart.SeriesCollection(1).XValues = xAxisRange 
+    chartObj.Chart.SeriesCollection(1).values = yAxisRange 
     ' Add chart title And axis labels If needed
     chartObj.Chart.HasTitle = True
     chartObj.Chart.ChartTitle.Text = caption

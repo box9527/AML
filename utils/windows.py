@@ -4,11 +4,17 @@
 
 
 from loguru import logger
-import win32com.client
-import win32com.client as win32
 
 
 def add_sheets_and_fill_data_to_xlsm(xlsm_file, sheet_data_dict, sheet_strcol_dict):
+    if platform.system() != 'Windows':
+        logger.debug(f"Not a Windows system: {platform.system()}")
+        logger.debug(f"Cannot import win32com library. Just skip for test.")
+        return
+
+    import win32com.client
+    import win32com.client as win32
+    
     # 使用 pywin32 開啟 Excel 應用程式
     excel_app = win32.gencache.EnsureDispatch('Excel.Application')
     excel_app.Visible = False

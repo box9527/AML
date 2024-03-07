@@ -31,6 +31,18 @@ def resource_path(relative_path):
 
     return os.path.join(base_path, relative_path)
 
+def ispython(path):
+    bfile = False
+    try:
+        # file name without extension
+        fname = os.path.splitext( os.path.basename(path) )[0]
+        if fname.lower() == 'python':
+            bfile = True
+    except:
+        pass
+
+    return bfile
+
 def isfile(path):
     bfile = False
     try:
@@ -50,3 +62,17 @@ def isdir(path):
         pass
 
     return bdir
+
+def extract_user_info(cash_flow: str='') -> list:
+    # cash_flow is a pdf file
+    '''
+    Performance is bad, just record it but not using.
+    '''
+    from pdfminer.high_level import extract_text
+    text = extract_text(cash_flow)
+    texts = text.split('\n')
+    for i, t in enumerate(texts):
+        if t.startswith('查詢迄日：'):
+            break
+
+    return texts

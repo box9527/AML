@@ -13,12 +13,16 @@ loguru==0.7.2
 Jinja2==3.1.2
 openpyxl==3.1.2
 xlrd==2.0.1
-xlsxwriter
+xlsxwriter==3.2.0
 scikit-learn==1.3.2
-jpype1
+jpype1==1.5.0
 # pyinstaller
 pyinstaller==6.3.0
-textrank4zh
-pandas
-# gui
-customtkinter==5.2.2
+textrank4zh==0.3
+pandas==2.1.4
+numpy==1.26.3
+pywin32==306; platform_system=="Windows"
+# NOTE: 
+# If the platform system is Windows, try pip install PyMuPDF .
+# If that doesn't work, attempt to install from a local folder containing extra packages.
+PyMuPDF==1.23.26; platform_system!="Windows"

@@ -3,123 +3,136 @@
 # @voneyay
 
 
-import tkinter as tk
-from tkinter import filedialog, messagebox
-import zipfile
-import os
-import tabula
+import time
 from loguru import logger
-from consts import STOPWORDS
-from txt_processors.extract_text import PDFProcessor
-from txt_processors.txtrank_v2 import TextRankSummarization
+import tkinter as tk
+from tkinter import ttk
+from tkinter import filedialog as fd
+from tkinter.messagebox import showinfo
+
+from excels_processor import Productivity
+from utils.toolkit import isfile
 
 
 class GUIApp:
     def __init__(self, root): 
+        # create the root window
         self.root = root
-        self.root.title("pdf檔選擇器")
-        self.root.geometry("400x200")
+        self.root.title('工具八POC金流(PCMS)檔案匯入器')
+        self.root.resizable(False, False)
+        self.root.geometry('300x150')
+        self.btn_txt = '匯入金流(PCMS)檔案'
+
         self.file_path = tk.StringVar()
-        self.process_zip = False 
-        self.source_folder = ''
-        
-        # 創建 PDFProcessor 實例
-        self.pdf_processor = PDFProcessor()
-        
-        # 選擇壓縮檔或資料夾按鈕
-        self.button_zip = tk.Button(self.root, text="選擇zip檔", command=lambda: self.browse("file", True))
-        self.button_zip.pack()
-        self.button_folder = tk.Button(self.root, text="選擇資料夾", command=lambda: self.browse("folder", False))
-        self.button_folder.pack()
-        
-        # 檔案相關的 Label
-        self.file_label = tk.Label(self.root, text="檔案尚未選擇")
-        self.file_label.pack()
-        
-        # 狀態相關的 Label
-        self.status_label = tk.Label(self.root, text="等待選擇檔案")
-        self.status_label.pack()
-        
-        # 開始按鈕
-        self.confirm_button = tk.Button(self.root, text="開始", command=self.confirm_selection)
-        self.confirm_button.pack()
+        self.prod = Productivity()
 
-
-    def browse(self, file_type, process_zip):
-        if file_type == "file":
-            file_path = filedialog.askopenfilename(
-                initialdir="/",
-                title="Select a file",
-                filetypes=(("Zip files", "*.zip"), ("All files", "*.*"))
-            )
-        elif file_type == "folder":
-            file_path = filedialog.askdirectory()
-
-        if file_path:
-            self.file_path.set(file_path)
-            self.source_folder = file_path
-            self.process_zip = process_zip  # 新增一個屬性用來記錄是否處理壓縮檔
-            selection_type = "壓縮檔" if process_zip else "資料夾"
-            self.file_label.config(text=f"選擇的{selection_type}路徑: {self.source_folder}")
-            self.status_label.config(text="選擇完成後按下『開始』")
-
+        # open button
+        self.open_button = ttk.Button(
+            self.root,
+            text='匯入金流(PCMS)檔案 0%',
+            command=self.select_file
+        )
+        
+        self.open_button.pack(expand=True)
+        
     def run_gui(self):
         self.root.mainloop()
 
-    def confirm_selection(self):
-        logger.info("確定按鈕被按下了!")
-        if not hasattr(self, 'source_folder') or not self.source_folder:
-            messagebox.showwarning("警告", "請先選擇檔案。")
+    def select_file(self):
+        filetypes = (
+            ('PDF files', '*.pdf'),
+        )
+
+        filename = fd.askopenfilename(
+            title='選擇金流(PCMS)檔案',
+            initialdir='/',
+            filetypes=filetypes)
+
+        showinfo(
+            title='選擇的檔案',
+            message=f'選擇的檔案路徑：{filename}'
+        )
+
+        self.file_path.set(filename)
+
+        # after close infomation woindow
+        self.progress()
+
+    def update_button_txt(self, message: str=''):
+        if (not message) or (len(message) <= 0):
             return
-        
-        if self.process_zip:  # 如果是壓縮檔，呼叫 extract_file 方法
-            extract_to_path = './pdfs'
-            self.extract_file(extract_to_path)
-            self.source_folder = extract_to_path
-        else: # 如果是一般檔案，直接使用原始的 source_folder
-             self.source_folder = self.source_folder
-        
-        trs = TextRankSummarization()
-        trs.set_stop_words_file(stop_words_file=STOPWORDS)
-        trs.run_processing(self.source_folder)
-        
-        self.root.quit()
-        self.root.destroy()  # 關閉主視窗
 
-    def extract_file(self, extract_to_path):
-        try:
-            file_extension = os.path.splitext(self.source_folder)[1].lower()
-            
-            if file_extension != '.zip':
-                raise ValueError
+        self.open_button['text'] = f'{message}'
+        self.root.update()
 
-            with zipfile.ZipFile(self.source_folder, 'r') as zip_ref:
-                for file_info in zip_ref.infolist():
-                    filename = ''
-                    try:
-                        filename = file_info.filename.encode('cp437').decode('utf-8')
-                        #print("檔案名稱：", filename)
+    def update_btn_state(self, state: bool=True):
+        self.open_button['state'] = 'enabled' if state == True else 'disabled'
 
-                    except UnicodeDecodeError:
-                        filename = file_info.filename.encode('cp437').decode('cp437')
-                        pass
+    def progress(self):
+        self.update_btn_state(False)
+        filename = self.file_path.get()
 
-                    if len(filename) <= 0 or (os.path.isfile(filename) == False):
-                        logger.warning(f"Not a file: {file_info}")
-                        continue
+        if isfile(filename) == False:
+            showinfo(
+                title='選擇的檔案',
+                message=f'檔案路徑不存在：{filename}'
+            )
+            self.update_btn_state(True)
+            return
 
-                    logger.info(f"Get a file: {filename}")
+        logger.info(f'Import and Create poc_tool8 with file {filename} started.')
+        self.update_button_txt(f'{self.btn_txt} 10%')
 
-                    if filename.lower().endswith('.pdf') == False:
-                        logger.info(f"Not a PDF file, skip: {filename}")
-                        continue
+        # check point 1
+        self.prod.set_cash_flow_file(cash_flow=filename)
+        self.update_button_txt(f'{self.btn_txt} 15%')
 
-                    logger.info(f"Extracting from file: {filename}")
+        # check point 2
+        bsuccess = self.prod.check_jre()
+        if bsuccess == False:
+            self.update_button_txt(f'JAVA 檢測失敗 ...')
+            time.sleep(3)
+            self.update_button_txt(f'{self.btn_txt}')
+            self.update_btn_state(True)
+            return
 
-                    zip_ref.extract(file_info, path=extract_to_path)
-                    original_path = os.path.join(extract_to_path, file_info.filename)
-                    new_path = os.path.join(extract_to_path, filename)
-                    os.rename(original_path, new_path)
-                    logger.debug(f"重新命名檔案：{new_path}")
-        except:
-            logger.warning(f"Extraction is failed：{self.source_folder}")
+        self.update_button_txt(f'{self.btn_txt} 30%')
+
+        # check point 3
+        bsuccess, data = self.prod.analysis_pdf()
+        if bsuccess == False:
+            self.update_button_txt(f'取出PCMS資料失敗 ...')
+            time.sleep(3)
+            self.update_button_txt(f'{self.btn_txt}')
+            self.update_btn_state(True)
+            return
+
+        self.update_button_txt(f'{self.btn_txt} 45%')
+
+        # check point 4
+        bsuccess, sdata = self.prod.strict_pdf(data)
+        if bsuccess == False:
+            self.update_button_txt(f'精煉PCMS資料失敗 ...')
+            time.sleep(3)
+            self.update_button_txt(f'{self.btn_txt}')
+            self.update_btn_state(True)
+            return
+
+        self.update_button_txt(f'{self.btn_txt} 87%')
+
+        # check point 5
+        bsuccess = self.prod.export_data(sdata)
+        if bsuccess == False:
+            self.update_button_txt(f'最終匯入PCMS資料失敗 ...')
+            time.sleep(3)
+            self.update_button_txt(f'{self.btn_txt}')
+            self.update_btn_state(True)
+            return
+
+        logger.info(f'Import and Create poc_tool8 with file {filename} completed.')
+        self.update_button_txt(f'{self.btn_txt} 99%')
+
+        time.sleep(3)
+        self.update_button_txt(f'{self.btn_txt}')
+        self.update_btn_state(True)
+

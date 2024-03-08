@@ -7,7 +7,7 @@ Attribute VB_Name = "Build"
 '     * Microsoft Visual Basic for Applications Extensibility 5.3
 '     * Microsoft Scripting Runtime
 ' 3. Rename the project to 'VBADeveloper' (in Project Explorer (Ctrl+R to show) select current project and click F4
-'    to open Properties window. Then set property '(Name)' to 'vbaDeveloper')
+'    to open Properties window. Then set property '(Name)' to 'VBADeveloper')
 ' 4. Enable programatic access to VBA:
 '       File -> Options -> Trust Center, Trust Center Settings, -> Macros,
 '       tick the box: 'Enable programatic access to VBA'  (In excel 2010: 'Trust access to the vba project object model')

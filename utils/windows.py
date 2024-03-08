@@ -31,7 +31,12 @@ def add_sheets_and_fill_data_to_xlsm(xlsm_file, sheet_data_dict, sheet_strcol_di
 
             # headers
             headers = dataframe.columns.values.tolist()
-            new_sheet.Range(new_sheet.Cells(1, 1), new_sheet.Cells(1, 1 + len(dataframe.columns) - 1)).Value = headers
+            if sheet_name != '1原始資料':
+                '''
+                因為現在原始資料上方多了金流交易檔的客戶資訊，所以 header 會變成 Unnamed: 0, 1 ...
+                貌似中介檔轉出再存入還是回出現，故乾脆在這裡再移除一次。
+                '''
+                new_sheet.Range(new_sheet.Cells(1, 1), new_sheet.Cells(1, 1 + len(dataframe.columns) - 1)).Value = headers
 
             # 將整個 DataFrame 寫入 Excel 表格
             start_row = 2  # 從第二行開始填入

@@ -1,3 +1,5 @@
+Option Explicit
+
 Private Sub Workbook_Open()
 
     With Worksheets(SheetNameSimple)
@@ -17,7 +19,6 @@ Private Sub Workbook_Open()
     End With
     
     menu.createMenu
-
 End Sub
 
 Private Sub Workbook_SheetActivate(ByVal Sh As Object)

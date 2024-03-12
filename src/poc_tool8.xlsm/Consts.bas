@@ -30,5 +30,10 @@ Public Const SheetNameMoney        As String = "3.2金流與交易對手"
 Public Const SheetNameBranch       As String = "分行清單"
 Public Const SheetNameIntermediate As String = "暫存區"
 Public Const RowDataBegin       As Integer = 9
-Public Const RowDataEnd       As Integer = 998
+Public Const RowDataEnd       As Integer = 999
+
+' Total count of version control files
+Public Const VerCtrlFilesSize As Integer = 10
+
+
 

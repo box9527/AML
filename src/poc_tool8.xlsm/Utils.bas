@@ -51,3 +51,40 @@ End Function
 Public Sub CountOne(ByRef Num As Integer)
     Num = Num + 1
 End Sub
+
+Public Function IsItemInArray(StrItem As String) As Boolean
+    'Dim IsItemInArray As Boolean
+    ' Version control files
+    Dim VerCtrlFiles(VerCtrlFilesSize - 1) As String
+    VerCtrlFiles(0) = "Build"
+    VerCtrlFiles(1) = "ErrorHandling"
+    VerCtrlFiles(2) = "Formatter"
+    VerCtrlFiles(3) = "NamedRanges"
+    VerCtrlFiles(4) = "Menu"
+    VerCtrlFiles(5) = "Test"
+    VerCtrlFiles(6) = "XMLexporter"
+    VerCtrlFiles(7) = "CustomActions"
+    VerCtrlFiles(8) = "EventListener"
+    VerCtrlFiles(9) = "MyCustomActions"
+
+    Dim i As Integer
+    For i = LBound(VerCtrlFiles) To UBound(VerCtrlFiles)
+        If StrComp(VerCtrlFiles(i), StrItem, vbTextCompare) = 0 Then
+            IsItemInArray = True
+            Exit Function
+        End If
+    Next i
+    IsItemInArray = False
+End Function
+
+Sub TestIsItemInArray()
+    Dim ItemToCheck As String
+    ItemToCheck = "Build"
+    
+    If IsItemInArray(ItemToCheck) Then
+        MsgBox ItemToCheck & " exists in the array."
+    Else
+        MsgBox ItemToCheck & " does not exist in the array."
+    End If
+End Sub
+

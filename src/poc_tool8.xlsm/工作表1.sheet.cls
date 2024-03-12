@@ -116,7 +116,7 @@ Function LookupBranchInfo(branchID As Variant) As Variant
     Set branchRange = ws.Range("A1:A" & lastRow)
     
     If Len(branchID) <= 3 Then
-        branchID = format(branchID, "0000")
+        branchID = Format(branchID, "0000")
     End If
     
     ' Search For the branch ID in column A
@@ -806,7 +806,7 @@ Sub GetVisitedBranch()
             If IsError(result) Then
                 Debug.Print "real branch info Not found" & cell.Text
                 'strKey = CStr(keysArray(i))
-                strKey = CStr(format$(keysArray(i), "0000"))
+                strKey = CStr(Format$(keysArray(i), "0000"))
             
             Else
                 strKey = CStr(result)
@@ -1086,7 +1086,7 @@ Function ProcessGroupByATM(groupRange As Range, colName As String, idxOut As Int
                         dictATM(strChannel) = dictATM(strChannel) + 1
                     End If
                 ElseIf Len(strChannel) < 4 And ContainsNumbers(strChannel) = True Then
-                    strBankID = format(CInt(strChannel), "000")
+                    strBankID = Format(CInt(strChannel), "000")
                     
                     cntATMTrans = cntATMTrans + 1
                     
@@ -2733,14 +2733,14 @@ Sub CreateBarChart(rowIndex1 As Integer, rowIndex2 As Integer, targetPosition As
     Set dataRange2 = ws.Range(ws.Cells(rowIndex2, 1), ws.Cells(rowIndex2, lastCol2))
     ' Combine the data ranges into one range
     Set chartRange = Union(dataRange1, dataRange2)
-    Set xAxisRange = dataRange1 
-    Set yAxisRange = dataRange2 
+    Set xAxisRange = dataRange1
+    Set yAxisRange = dataRange2
     ' Create a New chart on the worksheet
     Set chartObj = wsOut.ChartObjects.Add(Left:=targetPosition.Left, Top:=targetPosition.Top, Width:=targetPosition.Width, Height:=targetPosition.Height)
     ' Set the chart data source
     chartObj.Chart.SetSourceData chartRange
-    chartObj.Chart.SeriesCollection(1).XValues = xAxisRange 
-    chartObj.Chart.SeriesCollection(1).values = yAxisRange 
+    chartObj.Chart.SeriesCollection(1).XValues = xAxisRange
+    chartObj.Chart.SeriesCollection(1).values = yAxisRange
     ' Add chart title And axis labels If needed
     chartObj.Chart.HasTitle = True
     chartObj.Chart.ChartTitle.Text = caption

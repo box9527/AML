@@ -66,6 +66,14 @@ def add_sheets_and_fill_data_to_xlsm(xlsm_file, sheet_data_dict, sheet_strcol_di
     logger.debug(f"Successfully created {len(sheet_data_dict)} new worksheets in '{xlsm_file}' and filled in the data.")
 
 def add_sheet_fill_and_merge_to_xlsm(xlsm_file, new_sheet_name, dataframe, start_col, end_col):
+    if platform.system() != 'Windows':
+        logger.debug(f"Not a Windows system: {platform.system()}")
+        logger.debug(f"Cannot import win32com library. Just skip for test.")
+        return
+
+    import win32com.client
+    import win32com.client as win32
+
     # 使用 pywin32 開啟 Excel 應用程式
     excel_app = win32com.client.DispatchEx("Excel.Application")
     excel_app.Visible = False

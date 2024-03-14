@@ -8,14 +8,14 @@ Sub InitDicts()
         Debug.Print "dict inited before!!"
         Exit Sub
     End If
-    
+
     Set DictBlacklist = GetBlacklist()
-    
+
     Set DictVirtualAcc = GetVirtualAcc()
-    
+
     ' disable this to load them every thime
     'isDictInited = True
-    
+
 End Sub
 
 Public Function CheckVAccount(bankID As String, account As String) As String
@@ -26,13 +26,13 @@ Public Function CheckVAccount(bankID As String, account As String) As String
     'Debug.Print "Check " & bankID & " " & account
     ret = ""
     tmp = ""
-    
+
     If Len(bankID) = 0 Or Len(account) = 0 Then
         ret = ""
-        
+
     ElseIf Not DictVirtualAcc.Exists(bankID) Then
         ret = ""
-        
+
     Else
         Dim key     As Variant
         For Each key In DictVirtualAcc(bankID)
@@ -41,12 +41,12 @@ Public Function CheckVAccount(bankID As String, account As String) As String
             If b = True Then
                 ret = ret & " " & DictVirtualAcc(bankID)(key)
             End If
-            
+
         Next key
     End If
-    
+
     CheckVAccount = Trim(ret)
-    
+
 End Function
 
 Function ContainPrefix(Prefix As String, Text As String) As Boolean
@@ -62,14 +62,14 @@ Private Function GetVirtualAcc() As Object
     Dim wbRef       As Workbook
     Dim currentPath As String
     Dim isOpened    As Boolean
-    
+
     isOpened = True
     ' Get the current working directory
     currentPath = ThisWorkbook.Path
-    
+
     On Error Resume Next
     Set wbRef = Workbooks(FileVirtualAcc)
-    
+
     On Error GoTo 0
     If wbRef Is Nothing Then
         ' Workbook is not open, open it
@@ -80,26 +80,26 @@ Private Function GetVirtualAcc() As Object
 
     ' Set the reference worksheet
     Set wsRef = wbRef.Sheets(SheetNameVirtualAcc)
-    
+
     Dim bank        As String
     Dim strRule     As String
     Dim prefixRule  As String
     Dim colKey      As String
     Dim colVal      As String
     Dim colUsage    As String
-    
+
     colKey = "A"
     colVal = "B"
     colUsage = "E"
-    
+
     Set dict = CreateObject("Scripting.Dictionary")
-    
+
     lastRow = wsRef.Cells(wsRef.Rows.Count, colKey).End(xlUp).row
     For i = 2 To lastRow
         bank = CStr(wsRef.Cells(i, colKey).Value)
         If Not IsEmpty(bank) Then
             strRule = wsRef.Cells(i, colVal).Value & " (" & bank & " " & wsRef.Cells(i, colUsage).Value & ")"
-            
+
             prefixRule = ExtractNumbersPrefix(strRule)
             If Not dict.Exists(bank) Then
                 Dim nestedDict1 As Object
@@ -110,17 +110,17 @@ Private Function GetVirtualAcc() As Object
             Else
                 'Debug.Print "in bank " & bank & " add a New rule: " & prefixRule & "    " & strRule
                 dict(bank).Add prefixRule, strRule
-                
+
             End If
         End If
     Next i
-    
+
     If isOpened = False And wbRef.name = FileVirtualAcc Then
         wbRef.Close SaveChanges:=False
     End If
-    
+
     Set GetVirtualAcc = dict
-    
+
 End Function
 
 Private Function GetBlacklist() As Object
@@ -132,7 +132,7 @@ Private Function GetBlacklist() As Object
     Dim wbRef       As Workbook
     Dim currentPath As String
     Dim isOpened    As Boolean
-    
+
     isOpened = True
     ' Get the current working directory
     currentPath = ThisWorkbook.Path
@@ -144,19 +144,19 @@ Private Function GetBlacklist() As Object
         isOpened = False
         Set wbRef = Workbooks.Open(currentPath & "\" & FileBadAcc)
     End If
-    
+
     ' Set the reference worksheet
     Set wsRef = wbRef.Sheets(SheetNameBadAcc)
     Set dict = ExtraData.GetKVPairsToDict(wsRef, "G", "G")
-    
+
     If isOpened = False And wbRef.name = FileBadAcc Then
         wbRef.Close SaveChanges:=False
     End If
-    
+
     ' Now you have the items in the "BLACKLIST" sheet in the dictionary
     ' You can use the dictionary as needed
     Set GetBlacklist = dict
-    
+
 End Function
 
 Public Function GetKVPairsToDict(wsRef As Worksheet, colKey As String, colVal As String) As Object
@@ -164,9 +164,9 @@ Public Function GetKVPairsToDict(wsRef As Worksheet, colKey As String, colVal As
     Dim lastRow     As Long
     Dim i           As Long
     Dim item        As Variant
-    
+
     Set dict = CreateObject("Scripting.Dictionary")
-    
+
     lastRow = wsRef.Cells(wsRef.Rows.Count, colKey).End(xlUp).row
     ' Loop through column G and add items to the dictionary
     For i = 1 To lastRow
@@ -178,16 +178,16 @@ Public Function GetKVPairsToDict(wsRef As Worksheet, colKey As String, colVal As
             End If
         End If
     Next i
-    
+
     ' You can use the dictionary as needed
     Set GetKVPairsToDict = dict
-    
+
 End Function
 
 Function ExtractNumbersPrefix(inputString As String) As String
     Dim i           As Integer
     Dim result      As String
-    
+
     ' Loop through each character in the input string
     For i = 1 To Len(inputString)
         ' Check if the character is a number
@@ -195,12 +195,12 @@ Function ExtractNumbersPrefix(inputString As String) As String
             ' Append the numeric character to the result
             result = result & Mid(inputString, i, 1)
         Else
-            
+
             Exit For
-            
+
         End If
     Next i
-    
+
     ' Return the result containing numbers only
     ExtractNumbersPrefix = result
 End Function

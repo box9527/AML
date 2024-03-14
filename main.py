@@ -13,14 +13,8 @@ from utils.toolkit import (
     isfile,
     resource_path,
 )
+from gui import GUIApp
 
-plugin_ui = os.getenv('PLUGIN_UI', False)
-if plugin_ui == True:
-    # poc tool8 plugin
-    from plugin_gui import GUIApp
-else:
-    # main poc tool8 for 3RC
-    from gui import GUIApp
 
 def run():
     start_time = time.time()

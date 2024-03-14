@@ -16,7 +16,7 @@ Public Function CheckPivotItemExisted(objPivotTable As PivotTable, strPivotField
     Debug.Print bExisted
     bExisted = False
     Exit Function
-    
+
     '==========================
 End Function
 
@@ -33,7 +33,7 @@ End Function
 Public Function ObjectContainsItem(ByRef items As Object, itemToFind As Variant) As Boolean
     Dim bExisted As Boolean
     Dim i As Long
-    
+
     ' Iterate through the array
     For i = 1 To items.Count
         If items(i).name = itemToFind Then
@@ -42,7 +42,7 @@ Public Function ObjectContainsItem(ByRef items As Object, itemToFind As Variant)
             Exit Function
         End If
     Next i
-    
+
     ' Item not found
     bExisted = False
     Exit Function
@@ -80,7 +80,7 @@ End Function
 Sub TestIsItemInArray()
     Dim ItemToCheck As String
     ItemToCheck = "Build"
-    
+
     If IsItemInArray(ItemToCheck) Then
         MsgBox ItemToCheck & " exists in the array."
     Else

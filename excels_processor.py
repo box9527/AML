@@ -30,19 +30,15 @@ from utils.user_info import (
 from utils.windows import (
         add_sheets_and_fill_data_to_xlsm,
 )
-from textrank4zh import TextRank4Keyword 
-from collections import Counter  
+from consts import STOPWORDS
 
 
 class Productivity:
     def __init__(self):
-        self.text_rank_summarization = TextRankSummarization() 
         self.cash_flow = ''
         self.dwl_acc = ''
         self.vr_acc = ''
 
-        #self.tool8_ver = 'v1.5'
-        #self.tool8_tmpl = f'poc_tool8_{self.tool8_ver}.xlsm'
         self.tool8_tmpl = f'poc_tool8.xlsm'
         self.tool8_jre = 'jre-8u211-windows-x64.tar.gz'
 
@@ -50,7 +46,6 @@ class Productivity:
         self._cp_strict_rawdata = "rawdata-strict-tool8.xlsx"
 
         # result file
-        #self.cp_combined_result = f'【工具8】異常態樣分析摘要_{self.tool8_ver}.xlsm'
         self.cp_combined_result = f'【工具8】異常態樣分析摘要.xlsm'
 
         # 這裡的 "支出" 與 "存入" 用 "Out" 以及 "In"取代，目的是跟工具七的欄位一致
@@ -242,10 +237,6 @@ class Productivity:
 
             export = export[((export['Out'] == export['Out']) ) |
             ((export['In'] == export['In']))]
-            #export = export[(((export['Out'] == export['Out']) & (export['Out'] != '')) |
-            #((export['In'] == export['In']) & (export['In'] != ''))) &
-            #(export['備註'] != '')]
-
 
             exportx = export.copy(deep=True)
             exportx = exportx.replace(np.nan, '', regex=True)
@@ -292,8 +283,12 @@ class Productivity:
     def _combine_product(self, data: pd.DataFrame=None) -> bool:
         bsuccess = False
         data.index = np.arange(0, len(data))
-        sorted_df = self.text_rank_summarization.run_processing(data)  
-
+        
+        gen_dfs = dict()
+        plugin_ui = os.getenv('PLUGIN_UI', False)
+        if (plugin_ui == True) or (plugin_ui == "True"):
+            gen_dfs = self._gen_plugin_data(rawdata=data)
+        
         try:
             shutil.copy(resource_path(self.tool8_tmpl), self.cp_combined_result)
 
@@ -307,13 +302,22 @@ class Productivity:
                 #"Sheet2": pd.DataFrame({'Column1': [4, 5, 6], 'Column2': ['D', 'E', 'F']}),
                 # 可以根據需要繼續添加
                 "1原始資料": data,
-                "關鍵字分析": sorted_df, 
             }
 
             sheet_strcol_dict = {
+                # 定義有哪幾欄的資料是"必須要強制為字串格式的"
                 "1原始資料": [1, 2, 3, 5, 6, 11, 12, 13, 14, 15, 16],
-                "關鍵字分析": [], 
             }
+            
+            for tab_name, tab_ctx in gen_dfs.items():
+                if (tab_name in list(sheet_data_dict.keys())) or \
+                    (tab_name in list(sheet_strcol_dict.keys())):
+                        logger.warning(f"Generate Tool8 plugin related data with Same Sheet Names.")
+                        logger.warning(f"Skip conflict and leave to human check.")
+                        continue
+
+                sheet_data_dict[tab_name] = copy.deepcopy(tab_ctx)
+                sheet_strcol_dict[tab_name] = []
 
             add_sheets_and_fill_data_to_xlsm(real_result, sheet_data_dict, sheet_strcol_dict)
             time.sleep(5)
@@ -334,81 +338,24 @@ class Productivity:
             bsuccess = False
 
         return bsuccess
-    
 
-STOPWORDS = resource_path('stop_wordsv2.txt')
-class TextRankSummarization():
-    def __init__(self):
-        try:
-            import importlib
-            importlib.reload(sys)
-        except:
-            pass
+    def _gen_plugin_data(self, rawdata: pd.DataFrame=None) -> dict:
+        # poc tool8 plugin features
+        gen_dfs = dict()
+        if rawdata is None: return gen_dfs
 
-    def extract_keywords(self, content: str = None, count: int = 20, word_min_len: int = 2, topK: int = 1):
-        if not content:
-            return []
-
-        tr4w = TextRank4Keyword(stop_words_file=STOPWORDS)
-        tr4w.analyze(text=content, lower=False, window=3)  # 2)
-        keywords_list = tr4w.get_keywords(count, word_min_len=word_min_len)
-
-        # 如果未找到指定長度的關鍵字，再嘗試較小的長度
-        if not keywords_list and word_min_len == 3:
-            tr4w.analyze(text=content, lower=False, window=3)  # 2)
-            keywords_list = tr4w.get_keywords(count, word_min_len=2)
-
-        if keywords_list:
-            return re.sub(r"{'word': '(.+?)'}", r'\1', keywords_list[0]['word'])
-        else:
-            return content
-
-    def keywords_2(self, content: str = None, count: int = 20, topK: int = 1):
-        return self.extract_keywords(content, count, word_min_len=2, topK=topK)
-
-    def keywords_3(self, content: str = None, count: int = 20, topK: int = 1):
-        return self.extract_keywords(content, count, word_min_len=3, topK=topK)
-
-    def get_max_keyword(self, row, remark_dict_2, remark_dict_3):
-        count_2 = remark_dict_2.get(row['2字關鍵字'], 0)
-        count_3 = remark_dict_3.get(row['3字關鍵字'], 0)
-        return row['2字關鍵字'] if count_2 >= count_3 else row['3字關鍵字']
-
-    def process_data(self, data: pd.DataFrame=None):
-        df = data.fillna(0)
-        df = df.iloc[6:].reset_index(drop=True) 
-        df.columns = df.iloc[0] 
-        df.iloc[0] = df.columns 
-
-        result_df = pd.DataFrame(columns=['備註', '2字關鍵字', '3字關鍵字'])
-
-        df["備註"] = df["備註"].astype(str)
-        df = df[df["備註"].str.contains(r'[\u4e00-\u9fa5a-zA-Z]')]
-
-        df['2字關鍵字'] = df['備註'].apply(lambda x: self.keywords_2(x, topK=1))
-        df['3字關鍵字'] = df['備註'].apply(lambda x: self.keywords_3(x, topK=1))
-        result_df = pd.concat([df['備註'], df['2字關鍵字'], df['3字關鍵字']], axis=1)
-
-        count_2 = Counter(result_df['2字關鍵字'].explode())
-        count_3 = Counter(result_df['3字關鍵字'].explode())
-        remark_dict_2 = dict(count_2)
-        remark_dict_3 = dict(count_3)
-
-        df['關鍵字'] = df.apply(self.get_max_keyword, args=(remark_dict_2, remark_dict_3), axis=1)
-        count_max = Counter(df['關鍵字'].explode())
-        remark_dict_max = dict(count_max)
-
-        return df, remark_dict_max
-
-    def run_processing(self, data: pd.DataFrame=None):
-        processed_df, remark_dict_max = self.process_data(data)
-
-        selected_columns = ['關鍵字', '備註', '摘要', '交易日期', '交易時間', '交易分行', '交易櫃員', 'Out', 'In']
-        selected_columns_df = processed_df[selected_columns]
-
-        sorted_keys = sorted(remark_dict_max, key=remark_dict_max.get, reverse=True)
-        selected_columns_df = selected_columns_df.copy()
-        selected_columns_df['關鍵字'] = pd.Categorical(selected_columns_df['關鍵字'], categories=sorted_keys, ordered=True)
-        sorted_df = selected_columns_df.sort_values(by='關鍵字')
-   
-        return sorted_df
+        logger.debug(f"開始產生 Tool8 Plugin 相關資料 ...")
+        start_time = time.time()
+        
+        # 關鍵字分析
+        logger.debug(f"開始產生關鍵字分析 ...")
+        from txt_processors.txtrank_v2 import TextRankSummarization
+        trs = TextRankSummarization()
+        trs.set_stop_words_file(stop_words_file=STOPWORDS)
+        sorted_df = trs.run_processing(rawdata)
+        gen_dfs["關鍵字分析"] = copy.deepcopy(sorted_df)
+        
+        end_time = time.time()
+        elapsed_time = end_time - start_time
+        logger.debug(f"Tool8 Plugin 產生時間: {elapsed_time} 秒")
+        return copy.deepcopy(gen_dfs)

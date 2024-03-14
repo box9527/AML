@@ -20,6 +20,8 @@ Public Const ColorBlue      As Long = &HAD5236
 Public Const ColorOrange    As Long = &HB60B0
 Public Const ColorBlack     As Long = &H0
 Public Const ColorGreen     As Long = &H7C7C00 'RGB(0, 124, 124)
+Public Const ColorYellow2    As Long = &H86FFFE
+
 
 ' Sheet name definition
 Public Const SheetNameOrginal      As String = "1原始資料"
@@ -29,8 +31,8 @@ Public Const SheetNameSimple       As String = "3.1交易明細"
 Public Const SheetNameMoney        As String = "3.2金流與交易對手"
 Public Const SheetNameBranch       As String = "分行清單"
 Public Const SheetNameIntermediate As String = "暫存區"
+Public Const SheetNameLabel As String = "自訂標示設定"
 Public Const RowDataBegin       As Integer = 9
-Public Const RowDataEnd       As Integer = 999
 
 ' Total count of version control files
 Public Const VerCtrlFilesSize As Integer = 10

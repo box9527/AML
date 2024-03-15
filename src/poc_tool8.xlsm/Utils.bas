@@ -1,24 +1,4 @@
 Attribute VB_Name = "Utils"
-Public Function CheckPivotItemExisted(objPivotTable As PivotTable, strPivotFieldName As String, strPivotItemName As String) As Boolean
-    '==========================
-    ' 這裡可能會因為解析出來的交易摘要不包含"03跨行轉帳"而失敗，
-    ' 加上一個 For loop Check，檢查到有item，就離開。
-    '.PivotFields("交易摘要").CurrentPage = "03跨行轉帳"
-    Dim bExisted As Boolean
-    For Each pivot_item In objPivotTable.PivotFields(strPivotFieldName).PivotItems
-        If pivot_item.name = strPivotItemName Then
-            bExisted = True
-            Exit For
-            Exit Function
-        End If
-    Next pivot_item
-
-    Debug.Print bExisted
-    bExisted = False
-    Exit Function
-
-    '==========================
-End Function
 
 ' Get array length
 Public Function GetLength(A As Variant) As Integer
@@ -52,39 +32,56 @@ Public Sub CountOne(ByRef Num As Integer)
     Num = Num + 1
 End Sub
 
-Public Function IsItemInArray(StrItem As String) As Boolean
-    'Dim IsItemInArray As Boolean
-    ' Version control files
-    Dim VerCtrlFiles(VerCtrlFilesSize - 1) As String
-    VerCtrlFiles(0) = "Build"
-    VerCtrlFiles(1) = "ErrorHandling"
-    VerCtrlFiles(2) = "Formatter"
-    VerCtrlFiles(3) = "NamedRanges"
-    VerCtrlFiles(4) = "Menu"
-    VerCtrlFiles(5) = "Test"
-    VerCtrlFiles(6) = "XMLexporter"
-    VerCtrlFiles(7) = "CustomActions"
-    VerCtrlFiles(8) = "EventListener"
-    VerCtrlFiles(9) = "MyCustomActions"
-
-    Dim i As Integer
-    For i = LBound(VerCtrlFiles) To UBound(VerCtrlFiles)
-        If StrComp(VerCtrlFiles(i), StrItem, vbTextCompare) = 0 Then
-            IsItemInArray = True
-            Exit Function
+Public Sub QuickSort(ByRef arrValues() As Variant, ByRef arrKeys() As Variant, ByVal low As Long, ByVal high As Long)
+    Dim pivot       As Variant
+    Dim i           As Long
+    Dim j           As Long
+    Dim tempValue   As Variant
+    Dim tempKey     As Variant
+    i = low
+    j = high
+    pivot = arrValues((low + high) \ 2)
+    Do While i <= j
+        Do While arrValues(i) > pivot
+            i = i + 1
+        Loop
+        Do While arrValues(j) < pivot
+            j = j - 1
+        Loop
+        If i <= j Then
+            ' Swap values
+            tempValue = arrValues(i)
+            arrValues(i) = arrValues(j)
+            arrValues(j) = tempValue
+            ' Swap keys
+            tempKey = arrKeys(i)
+            arrKeys(i) = arrKeys(j)
+            arrKeys(j) = tempKey
+            i = i + 1
+            j = j - 1
         End If
-    Next i
-    IsItemInArray = False
-End Function
-
-Sub TestIsItemInArray()
-    Dim ItemToCheck As String
-    ItemToCheck = "Build"
-
-    If IsItemInArray(ItemToCheck) Then
-        MsgBox ItemToCheck & " exists in the array."
-    Else
-        MsgBox ItemToCheck & " does not exist in the array."
-    End If
+    Loop
+    If low < j Then QuickSort arrValues, arrKeys, low, j
+    If i < high Then QuickSort arrValues, arrKeys, i, high
 End Sub
 
+Public Function ContainsNumbers(inputString As String) As Boolean
+    Dim i           As Integer
+    Dim charCode    As Integer
+    Dim hasNumbers  As Boolean
+    ' Initialize variables
+    hasNumbers = False
+    ' Loop through each character in the string
+    For i = 1 To Len(inputString)
+        ' Check if the character is a number (ASCII code between 48 and 57)
+        charCode = Asc(Mid(inputString, i, 1))
+        If charCode >= 48 And charCode <= 57 Then
+            hasNumbers = True
+        Else
+            hasNumbers = False
+            Exit For
+        End If
+    Next i
+    ' Return the result
+    ContainsNumbers = hasNumbers
+End Function

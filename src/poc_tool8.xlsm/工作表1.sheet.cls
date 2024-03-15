@@ -1,103 +1,25 @@
-'Option Explicit
 
-'TASK IDs
-Const EmptyArrayValue As Long = -1
+Private Const idCountAlertMonth As Integer = 1          ' 找出 "較之前多3~5倍 超出閥值的月份 總次數", 這裡定義的是 taskID
+Private Const idAmountAlertMonth As Integer = 2         ' 找出 "較之前多3~5倍 超出閥值的月份 總金額", 這裡定義的是 taskID
+Private Const idOver1MillionAlertMonth As Integer = 3   ' 找出 "當月較前月多增>=NTD100萬 超出閥值的月份", 這裡定義的是 taskID
 
-Const task1TotalCount As Integer = 1
-Const task2TotalAmount As Integer = 2
-Const task3AbsoluteAmount As Integer = 3
-
-'Task1 related  constants
-'For sheet 主頁
-
-Const posRunStatus      As String = "F2"
-Const posTask1      As String = "F3"
-Const posTask2      As String = "F4"
-Const posTask3      As String = "F5"
-Const posTask4      As String = "F7"
-Const posTask5      As String = "F8"
-Const posTask6      As String = "F10"
-Const posTask9      As String = "F15"
-Const posTask10     As String = "F16"
-Const posTask11     As String = "F17"
-Const posTask12     As String = "F18"
-Const posTask13     As String = "F19"
-Const posTask14     As String = "F20"
-Const posTask7_1    As String = "F12"
-Const posTask7_2     As String = "F13"
-
-'For sheet simple
-Const SimpleColReason     As String = "K"
-Const strReason50w     As String = "金額接近 50 萬"
-Const strReasonSmall     As String = "小額轉帳"
-Const strReasonFast     As String = "快速進出"
-Const strReasonMorning     As String = "凌晨交易"
-Const strReasonLarge     As String = "大額進出"
-Const strReasonAlert As String = "往來警示帳戶"
-
-'For sheet 暫存區
-Const RowTask1TotalCountKey  As Integer = 4
-Const RowTask1TotalCountValue  As Integer = 5
-
-Const RowTask23TotalAmountKey  As Integer = 7
-Const RowTask23TotalAmountValue  As Integer = 8
-
-Const RowTask4WithdrawOverCounterKey  As Integer = 10
-Const RowTask4WithdrawOverCounterValue  As Integer = 11
-
-Const RowTask5WithdrawSummaryKey  As Integer = 13
-Const RowTask5WithdrawSummaryValue  As Integer = 14
-
-Const RowTask5WithdrawBranchKey  As Integer = 16
-Const RowTask5WithdrawBranchValue  As Integer = 17
-
-Const RowTask5VisitedBranchKey  As Integer = 19
-Const RowTask5VisitedBranchValue  As Integer = 20
-
-Const RowTask9ATMDepositKey  As Integer = 22
-Const RowTask9ATMDepositValue  As Integer = 23
-Const RowTask9ATMDepositLocation  As Integer = 24
-Const RowTask9ATMDepositLocationDetail  As Integer = 25
-
-Const RowTask11BalanceKey As Integer = 27
-Const RowTask11BalanceValue As Integer = 28
-
-Const RowTask12SmallTransferKey As Integer = 30
-Const RowTask12SmallTransferOneDollar As Integer = 31
-Const RowTask12SmallTransferHundred As Integer = 32
-Const RowTask12SmallTransferMany As Integer = 33
-
-Const RowTask7DiffKey As Integer = 36
-Const RowTask7DiffTransferValue As Integer = 37
-Const RowTask7DiffDepositValue As Integer = 38
-Const RowTask7DiffRatio As Integer = 39
-
-Const RowTask6QuickKey As Integer = 42
-Const RowTask6QuickValue As Integer = 43
-
-' Note: this one has to be the last as the item count is not fixed
-Const RowTopCounterparty As Integer = 60
-
-'For sheet 原始資料
-Const maxSrcCol     As Integer = 50
-
-Const SelfServiceID As String = "0880"        ' 您幫幫您
-Const SelfServiceID_2 As String = "880"        ' 您幫幫您
-
-Const ColTSDate     As Integer = 1        ' 交易日期
-Const ColTSTime     As Integer = 4        ' 交易日期
-Const ColBranchID   As Integer = 5        ' 交易分行
-Const colBalance    As Integer = 9        ' 餘額
-Const colAccount    As Integer = 10        ' 轉出入帳戶
-Const colChannel    As Integer = 13        ' 票號
-Const ColTSType     As Integer = 16        ' 交易摘要
-Const ColAmountTransfer As Integer = 17        ' 轉出金額
-Const ColAmountDeposit As Integer = 18        ' 存入金額
-
-' 寫入欄位
-Const ColTask1OutputMarkerCount  As Integer = 1
-Const ColTask2OutputMarkerAmount  As Integer = 2
-Const ColTask3OutputMarkerAbsoluteAmount  As Integer = 3
+' 這裡定義每個task 的顯示資訊的 cell 位置。都是F欄，不同列
+' task 的編號，盡量與 Consts 裡的RowTask 描述相同
+Private Const posRunStatus     As String = "F2"         ' 紀載在 row 2, column F
+Private Const posTask1Result   As String = "F3"         ' 紀載在 row 3, column F
+Private Const posTask2Result   As String = "F4"         ' 紀載在 row 4, column F
+Private Const posTask3Result   As String = "F5"         ' 紀載在 row 5, column F
+Private Const posTask4Result   As String = "F7"         ' 紀載在 row 7, column F
+Private Const posTask5Result   As String = "F8"         ' 紀載在 row 8, column F
+Private Const posTask6Result   As String = "F10"        ' 紀載在 row 10, column F
+Private Const posTask9Result   As String = "F15"        ' 紀載在 row 15, column F
+Private Const posTask10Result  As String = "F16"        ' 紀載在 row 16, column F
+Private Const posTask11Result  As String = "F17"        ' 紀載在 row 17, column F
+Private Const posTask12Result  As String = "F18"        ' 紀載在 row 18, column F
+Private Const posTask13Result  As String = "F19"        ' 紀載在 row 19, column F
+Private Const posTask14Result  As String = "F20"        ' 紀載在 row 20, column F
+Private Const posTask7_1Result As String = "F12"        ' 紀載在 row 12, column F, 第7個任務的第1個子任務
+Private Const posTask7_2Result As String = "F13"        ' 紀載在 row 12, column F, 第7個任務的第2個子任務
 
 ' 拉出來變成 Global Variables 用來控制 交易對手 裡要不要秀 ATM 的 PivotTable
 Private gCntMultiATM As Integer
@@ -136,7 +58,7 @@ Sub HighlightRow(row As Long, reason As String, color As Long)
     Dim wsOut          As Worksheet
     Set wsOut = ThisWorkbook.Worksheets(SheetNameSimple)
 
-    wsOut.Cells(row, SimpleColReason).Value = wsOut.Cells(row, SimpleColReason).Value & " " & reason
+    wsOut.Cells(row, ColAlertReason).Value = wsOut.Cells(row, ColAlertReason).Value & " " & reason
     wsOut.Rows(row).Font.color = color
 
 End Sub
@@ -171,7 +93,7 @@ Function FindMonthsExceedingThreshold(dateRow As Integer, amountRow As Integer, 
         currentMonthAmount = CDbl(ws.Cells(amountRow, col).Value)
         previousMonthAmount = CDbl(ws.Cells(amountRow, col - 1).Value)
         ' Check If the current month's amount is three times larger than the previous month
-        If taskID = task2TotalAmount Then
+        If taskID = idAmountAlertMonth Then
             'FIXME: 這個閥值應該參數化
             If currentMonthAmount >= 3 * previousMonthAmount Then
                 ' Add the column index To the array
@@ -179,14 +101,14 @@ Function FindMonthsExceedingThreshold(dateRow As Integer, amountRow As Integer, 
                 columnIndices(i) = col
                 i = i + 1
             End If
-        ElseIf taskID = task1TotalCount Then
+        ElseIf taskID = idCountAlertMonth Then
             If currentMonthAmount >= 3 * previousMonthAmount Then
                 ' Add the column index To the array
                 ReDim Preserve columnIndices(1 To i)
                 columnIndices(i) = col
                 i = i + 1
             End If
-        ElseIf taskID = task3AbsoluteAmount Then
+        ElseIf taskID = idOver1MillionAlertMonth Then
             If currentMonthAmount >= (previousMonthAmount + 1000000) Then
                 ' Add the column index To the array
                 ReDim Preserve columnIndices(1 To i)
@@ -237,13 +159,13 @@ Sub ProcessRowsByMonth()
             End If
 
             ' Initialize a New group For the current date
-            Set currentGroup = ws.Range(ws.Cells(row, 1), ws.Cells(row, maxSrcCol))
+            Set currentGroup = ws.Range(ws.Cells(row, 1), ws.Cells(row, MaxSrcCol))
 
             currentYear = y
             currentMonth = m
         Else
             ' Add the row To the current group
-            Set currentGroup = Union(currentGroup, ws.Range(ws.Cells(row, 1), ws.Cells(row, maxSrcCol)))
+            Set currentGroup = Union(currentGroup, ws.Range(ws.Cells(row, 1), ws.Cells(row, MaxSrcCol)))
 
         End If
     Next row
@@ -256,67 +178,61 @@ Sub ProcessRowsByMonth()
     End If
 
     ' 畫圖
-    CreateBarChart RowTask1TotalCountKey, RowTask1TotalCountValue, Range("H3:O5"), "分月交易總次數", "每月次數"
+    CreateBarChart RowTask1TotalCountXAxis, RowTask1TotalCountYAxis, Range("H3:O5"), "分月交易總次數", "每月次數"
 
-    CreateBarChart RowTask23TotalAmountKey, RowTask23TotalAmountValue, Range("Q3:X5"), "分月交易總金額", "每月金額"
+    CreateBarChart RowTask23TotalAmountXAxis, RowTask23TotalAmountYAxis, Range("Q3:X5"), "分月交易總金額", "每月金額"
 
     ' Add markers For selected one
     Dim resultArray() As Long        ' 有超過閥值的月份
     Dim i           As Integer
     Dim strSummary  As String
 
-    resultArray = FindMonthsExceedingThreshold(RowTask1TotalCountKey, RowTask1TotalCountValue, task1TotalCount)
-
-    'DrawMarker resultArray, ColTask1OutputMarkerCount, task1TotalCount
+    resultArray = FindMonthsExceedingThreshold(RowTask1TotalCountXAxis, RowTask1TotalCountYAxis, idCountAlertMonth)
 
     ' 寫文字摘要
     If IsThresholdArrayEmpty(resultArray) = False Then
         strSummary = "在分月交易數據中，發現在"
         For i = LBound(resultArray) To UBound(resultArray)
             If resultArray(i) > 0 Then
-                strSummary = strSummary & CStr(wsInt.Cells(RowTask1TotalCountKey, resultArray(i)).Value) & " "
+                strSummary = strSummary & CStr(wsInt.Cells(RowTask1TotalCountXAxis, resultArray(i)).Value) & " "
             End If
         Next i
         strSummary = strSummary & "有異常的月總筆數增幅"
-        Range(posTask1).Font.color = ColorRed
-        Range(posTask1).WrapText = True
-        Range(posTask1).Value = strSummary
+        Range(posTask1Result).Font.color = ColorRed
+        Range(posTask1Result).WrapText = True
+        Range(posTask1Result).Value = strSummary
     End If
 
-    resultArray = FindMonthsExceedingThreshold(RowTask23TotalAmountKey, RowTask23TotalAmountValue, task2TotalAmount)
-
-    'DrawMarker resultArray, ColTask2OutputMarkerAmount, task2TotalAmount
+    resultArray = FindMonthsExceedingThreshold(RowTask23TotalAmountXAxis, RowTask23TotalAmountYAxis, idAmountAlertMonth)
 
     ' 寫文字摘要
     If IsThresholdArrayEmpty(resultArray) = False Then
         strSummary = "在分月交易數據中，發現在"
         For i = LBound(resultArray) To UBound(resultArray)
             If resultArray(i) > 0 Then
-                strSummary = strSummary & CStr(wsInt.Cells(RowTask23TotalAmountKey, resultArray(i)).Value) & " "
+                strSummary = strSummary & CStr(wsInt.Cells(RowTask23TotalAmountXAxis, resultArray(i)).Value) & " "
             End If
         Next i
         strSummary = strSummary & "有異常的月總金額增幅"
-        Range(posTask2).Font.color = ColorRed
-        Range(posTask2).WrapText = True
-        Range(posTask2).Value = strSummary
+        Range(posTask2Result).Font.color = ColorRed
+        Range(posTask2Result).WrapText = True
+        Range(posTask2Result).Value = strSummary
     End If
 
-    resultArray = FindMonthsExceedingThreshold(RowTask23TotalAmountKey, RowTask23TotalAmountValue, task3AbsoluteAmount)
-
-    'DrawMarker resultArray, ColTask3OutputMarkerAbsoluteAmount, task3AbsoluteAmount
+    resultArray = FindMonthsExceedingThreshold(RowTask23TotalAmountXAxis, RowTask23TotalAmountYAxis, idOver1MillionAlertMonth)
 
     ' 寫文字摘要
     If IsThresholdArrayEmpty(resultArray) = False Then
         strSummary = "在分月交易數據中，發現在"
         For i = LBound(resultArray) To UBound(resultArray)
             If resultArray(i) > 0 Then
-                strSummary = strSummary & CStr(wsInt.Cells(RowTask23TotalAmountKey, resultArray(i)).Value) & " "
+                strSummary = strSummary & CStr(wsInt.Cells(RowTask23TotalAmountXAxis, resultArray(i)).Value) & " "
             End If
         Next i
         strSummary = strSummary & "有異常的月總金額增幅"
-        Range(posTask3).Font.color = ColorRed
-        Range(posTask3).WrapText = True
-        Range(posTask3).Value = strSummary
+        Range(posTask3Result).Font.color = ColorRed
+        Range(posTask3Result).WrapText = True
+        Range(posTask3Result).Value = strSummary
     End If
 
 End Sub
@@ -338,11 +254,11 @@ Sub ProcessGroupByMonth(groupRange As Range, colName As String, idxOut As Long)
     Dim wsInt       As Worksheet
     Set wsInt = ThisWorkbook.Worksheets(SheetNameIntermediate)
 
-    wsInt.Cells(RowTask23TotalAmountKey, idxOut).Value = colName
-    wsInt.Cells(RowTask23TotalAmountValue, idxOut).Value = sum
+    wsInt.Cells(RowTask23TotalAmountXAxis, idxOut).Value = colName
+    wsInt.Cells(RowTask23TotalAmountYAxis, idxOut).Value = sum
 
-    wsInt.Cells(RowTask1TotalCountKey, idxOut).Value = colName
-    wsInt.Cells(RowTask1TotalCountValue, idxOut).Value = groupRange.Rows.Count
+    wsInt.Cells(RowTask1TotalCountXAxis, idxOut).Value = colName
+    wsInt.Cells(RowTask1TotalCountYAxis, idxOut).Value = groupRange.Rows.Count
 
 End Sub
 
@@ -395,14 +311,14 @@ Sub ProcessRowsByDay()
             End If
 
             ' Initialize a New group For the current date
-            Set currentGroup = ws.Range(ws.Cells(row, 1), ws.Cells(row, maxSrcCol))
+            Set currentGroup = ws.Range(ws.Cells(row, 1), ws.Cells(row, MaxSrcCol))
 
             currentYear = y
             currentMonth = m
             currentDay = d
         Else
             ' Add the row To the current group
-            Set currentGroup = Union(currentGroup, ws.Range(ws.Cells(row, 1), ws.Cells(row, maxSrcCol)))
+            Set currentGroup = Union(currentGroup, ws.Range(ws.Cells(row, 1), ws.Cells(row, MaxSrcCol)))
 
         End If
     Next row
@@ -420,7 +336,7 @@ Sub ProcessRowsByDay()
     Dim i           As Long
     Dim nDays       As Integer
     '  For task 11
-    lastColumn = wsInt.Cells(RowTask12SmallTransferKey, wsInt.columns.Count).End(xlToLeft).Column
+    lastColumn = wsInt.Cells(RowTask12SmallTransferXAxis, wsInt.columns.Count).End(xlToLeft).Column
 
     nDays = 0
     For i = 1 To lastColumn
@@ -429,12 +345,12 @@ Sub ProcessRowsByDay()
         End If
     Next i
 
-    Range(posTask12).WrapText = True
+    Range(posTask12Result).WrapText = True
     If nDays > 0 Then
-        Range(posTask12).Value = "在觀察期間交易數據中，有 " & CStr(nDays) & " 日發現一元轉帳"
+        Range(posTask12Result).Value = "在觀察期間交易數據中，有 " & CStr(nDays) & " 日發現一元轉帳"
     End If
 
-    CreateBarChart RowTask12SmallTransferKey, RowTask12SmallTransferOneDollar, Range("H18:O19"), "一元交易", "交易筆數"
+    CreateBarChart RowTask12SmallTransferXAxis, RowTask12SmallTransferOneDollar, Range("H18:O19"), "一元交易", "交易筆數"
 
     nDays = 0
     For i = 1 To lastColumn
@@ -442,11 +358,11 @@ Sub ProcessRowsByDay()
             nDays = nDays + 1
         End If
     Next i
-    Range(posTask13).WrapText = True
+    Range(posTask13Result).WrapText = True
     If nDays > 0 Then
-        Range(posTask13).Value = "在觀察期間交易數據中，有 " & CStr(nDays) & " 日發現小於百元轉帳"
+        Range(posTask13Result).Value = "在觀察期間交易數據中，有 " & CStr(nDays) & " 日發現小於百元轉帳"
     End If
-    CreateBarChart RowTask12SmallTransferKey, RowTask12SmallTransferHundred, Range("Q18:X19"), "小於百元交易", "交易筆數"
+    CreateBarChart RowTask12SmallTransferXAxis, RowTask12SmallTransferHundred, Range("Q18:X19"), "小於百元交易", "交易筆數"
 
     nDays = 0
     For i = 1 To lastColumn
@@ -454,11 +370,11 @@ Sub ProcessRowsByDay()
             nDays = nDays + 1
         End If
     Next i
-    Range(posTask14).WrapText = True
+    Range(posTask14Result).WrapText = True
     If nDays > 0 Then
-        Range(posTask14).Value = "在觀察期間交易數據中，有 " & CStr(nDays) & " 日發現跨行交易筆數高案例"
+        Range(posTask14Result).Value = "在觀察期間交易數據中，有 " & CStr(nDays) & " 日發現跨行交易筆數高案例"
     End If
-    CreateBarChart RowTask12SmallTransferKey, RowTask12SmallTransferMany, Range("H20:X20"), "跨行交易", "交易筆數"
+    CreateBarChart RowTask12SmallTransferXAxis, RowTask12SmallTransferMany, Range("H20:X20"), "跨行交易", "交易筆數"
 
     ' For task 45
 
@@ -471,12 +387,12 @@ Sub ProcessRowsByDay()
 
     Dim dict        As New Scripting.Dictionary
 
-    lastColumn = wsInt.Cells(RowTask4WithdrawOverCounterKey, wsInt.columns.Count).End(xlToLeft).Column
+    lastColumn = wsInt.Cells(RowTask4WithdrawOverCounterXAxis, wsInt.columns.Count).End(xlToLeft).Column
 
     For i = 1 To lastColumn
         Dim val, key As Variant
-        key = wsInt.Cells(RowTask4WithdrawOverCounterKey, i).Value
-        val = wsInt.Cells(RowTask4WithdrawOverCounterValue, i).Value
+        key = wsInt.Cells(RowTask4WithdrawOverCounterXAxis, i).Value
+        val = wsInt.Cells(RowTask4WithdrawOverCounterYAxis, i).Value
 
         If val > 1 Then
             strSusDates = strSusDates & " " & key
@@ -496,19 +412,19 @@ Sub ProcessRowsByDay()
     col = 1
     For i = 1 To lastColumn
         If dict.Exists(i) Then
-            wsInt.Cells(RowTask5WithdrawSummaryKey, col).Value = "發生" & CStr(i) & "筆"
-            wsInt.Cells(RowTask5WithdrawSummaryValue, col).Value = dict(i)
+            wsInt.Cells(RowTask5WithdrawSummaryXAxis, col).Value = "發生" & CStr(i) & "筆"
+            wsInt.Cells(RowTask5WithdrawSummaryYAxis, col).Value = dict(i)
             col = col + 1
             cntTotal = cntTotal + dict(i)
         End If
     Next i
 
     ' Task 4
-    CreateBarChart RowTask5WithdrawSummaryKey, RowTask5WithdrawSummaryValue, Range("H7:O8"), "可疑大額提領", "天數"
+    CreateBarChart RowTask5WithdrawSummaryXAxis, RowTask5WithdrawSummaryYAxis, Range("H7:O8"), "可疑大額提領", "天數"
 
     ' 寫摘要
     If hasSusDates = False Then
-        Range(posTask4).Value = "在當日臨櫃提領現金交易數據中，沒有發現異常"
+        Range(posTask4Result).Value = "在當日臨櫃提領現金交易數據中，沒有發現異常"
     End If
 
     ' 多間分行提領
@@ -524,10 +440,10 @@ Sub ProcessRowsByDay()
     strHits = ""
 
     ' Loop through each cell in the specified row
-    For idxCol = 1 To wsInt.Cells(RowTask5WithdrawBranchKey, wsInt.columns.Count).End(xlToLeft).Column
+    For idxCol = 1 To wsInt.Cells(RowTask5WithdrawBranchXAxis, wsInt.columns.Count).End(xlToLeft).Column
         ' Get the value of the current cell
-        cellKey = wsInt.Cells(RowTask5WithdrawBranchKey, idxCol).Value
-        cellValue = Trim(wsInt.Cells(RowTask5WithdrawBranchValue, idxCol).Value)
+        cellKey = wsInt.Cells(RowTask5WithdrawBranchXAxis, idxCol).Value
+        cellValue = Trim(wsInt.Cells(RowTask5WithdrawBranchYAxis, idxCol).Value)
         If cellValue <> "" Then
             ' Process the cell value (replace With your code)
             ' Debug.Print "Column: " & idxCol & ", Value: " & cellValue
@@ -539,11 +455,11 @@ Sub ProcessRowsByDay()
 
     ' 寫摘要
     If hasMulti = True Then
-        Range(posTask5).Value = "在當日臨櫃提領現金交易數據中，在觀察期間有發現不同地點提領: " & vbNewLine & strHits
+        Range(posTask5Result).Value = "在當日臨櫃提領現金交易數據中，在觀察期間有發現不同地點提領: " & vbNewLine & strHits
     End If
 
     ' For task 7
-    lastColumn = wsInt.Cells(RowTask7DiffKey, wsInt.columns.Count).End(xlToLeft).Column
+    lastColumn = wsInt.Cells(RowTask7DiffXAxis, wsInt.columns.Count).End(xlToLeft).Column
     Dim cntDiffLess As Double
     Dim totalDeposit As Double
     Dim totalTransfer As Double
@@ -554,8 +470,8 @@ Sub ProcessRowsByDay()
     totalTransfer = 0
 
     For i = 1 To lastColumn
-        totalDeposit = totalDeposit + CDbl(wsInt.Cells(RowTask7DiffDepositValue, i).Value)
-        totalTransfer = totalTransfer + CDbl(wsInt.Cells(RowTask7DiffTransferValue, i).Value)
+        totalDeposit = totalDeposit + CDbl(wsInt.Cells(RowTask7DiffDeposit, i).Value)
+        totalTransfer = totalTransfer + CDbl(wsInt.Cells(RowTask7DiffTransfer, i).Value)
 
         ratio = CDbl(wsInt.Cells(RowTask7DiffRatio, i).Value)
         If (ratio > 0) And (ratio <= 0.03) Then
@@ -569,15 +485,15 @@ Sub ProcessRowsByDay()
         ratio = 0
     End If
     If (ratio > 0) And (ratio < 0.03) Then        ' FIXME:make 0.03 a constant
-        Range(posTask7_1).Value = "在觀察區間內，總出入帳金額差距甚小"
+        Range(posTask7_1Result).Value = "在觀察區間內，總出入帳金額差距甚小"
     End If
 
     If cntDiffLess > 0 Then
-        Range(posTask7_2).Value = "在觀察區間內，發現 " & CStr(cntDiffLess) & "  次出入帳金額差距甚小"
+        Range(posTask7_2Result).Value = "在觀察區間內，發現 " & CStr(cntDiffLess) & "  次出入帳金額差距甚小"
     End If
 
     ' Task 7
-    CreateBarChart RowTask7DiffKey, RowTask7DiffRatio, Range("H12:X13"), "出入帳金額比例", "差距比例"
+    CreateBarChart RowTask7DiffXAxis, RowTask7DiffRatio, Range("H12:X13"), "出入帳金額比例", "差距比例"
 
 End Sub
 
@@ -633,18 +549,18 @@ Function ProcessGroupByDay(groupRange As Range, colName As String, idxOut As Lon
         If IsNumeric(cell.Value) Then
             If cell.Value >= 400000 And cell.Value < 500000 Then        'FIXME: this should be from setting, 不確定lower bound
                 cntSuspicious = cntSuspicious + 1
-                HighlightRow cell.row, strReason50w, ColorRed
+                HighlightRow cell.row, ReasonCloseTo50w, ColorRed
             End If
         End If
     Next cell
 
     If cntSuspicious > 0 Then
-        wsInt.Cells(RowTask4WithdrawOverCounterKey, idxOut).Value = colName
-        wsInt.Cells(RowTask4WithdrawOverCounterValue, idxOut).Value = cntSuspicious
+        wsInt.Cells(RowTask4WithdrawOverCounterXAxis, idxOut).Value = colName
+        wsInt.Cells(RowTask4WithdrawOverCounterYAxis, idxOut).Value = cntSuspicious
 
-        wsInt.Cells(RowTask5WithdrawBranchKey, idxOut).Value = colName
+        wsInt.Cells(RowTask5WithdrawBranchXAxis, idxOut).Value = colName
         If cntBranch >= 2 Then
-            wsInt.Cells(RowTask5WithdrawBranchValue, idxOut).Value = strBranch
+            wsInt.Cells(RowTask5WithdrawBranchYAxis, idxOut).Value = strBranch
         End If
 
         ProcessGroupByDay = True
@@ -680,28 +596,28 @@ Function ProcessGroupByDaySmallAmount(groupRange As Range, colName As String, id
         If cell.Text = "03跨行轉帳" Or cell.Text = "04本行轉帳" Then
             If amount = 1 Then
                 cntOneDollar = cntOneDollar + 1
-                HighlightRow cell.row, strReasonSmall, ColorRed
+                HighlightRow cell.row, ReasonSmallTSAmount, ColorRed
             ElseIf amount > 1 And amount < 100 Then
                 cntHundred = cntHundred + 1
-                HighlightRow cell.row, strReasonSmall, ColorPink
+                HighlightRow cell.row, ReasonSmallTSAmount, ColorPink
             End If
 
         End If
     Next cell        ' for each ColTSType's Cells
 
     If cntOneDollar > 0 Then
-        wsInt.Cells(RowTask12SmallTransferKey, idxOut).Value = colName
+        wsInt.Cells(RowTask12SmallTransferXAxis, idxOut).Value = colName
         wsInt.Cells(RowTask12SmallTransferOneDollar, idxOut).Value = cntOneDollar
 
     End If
 
     If cntHundred > 0 Then
-        wsInt.Cells(RowTask12SmallTransferKey, idxOut).Value = colName
+        wsInt.Cells(RowTask12SmallTransferXAxis, idxOut).Value = colName
         wsInt.Cells(RowTask12SmallTransferHundred, idxOut).Value = cntHundred
     End If
 
     If cntInterBank >= 5 Then
-        wsInt.Cells(RowTask12SmallTransferKey, idxOut).Value = colName
+        wsInt.Cells(RowTask12SmallTransferXAxis, idxOut).Value = colName
         wsInt.Cells(RowTask12SmallTransferMany, idxOut).Value = cntInterBank
 
     End If
@@ -737,9 +653,9 @@ Function ProcessGroupByDayDiff(groupRange As Range, colName As String, idxOut As
     Next cell        ' for each ColAmountTransfer's Cells
 
     'FIXME: set format as percentage!
-    wsInt.Cells(RowTask7DiffKey, idxOut).Value = colName
-    wsInt.Cells(RowTask7DiffDepositValue, idxOut).Value = sumDeposit
-    wsInt.Cells(RowTask7DiffTransferValue, idxOut).Value = sumTransfer
+    wsInt.Cells(RowTask7DiffXAxis, idxOut).Value = colName
+    wsInt.Cells(RowTask7DiffDeposit, idxOut).Value = sumDeposit
+    wsInt.Cells(RowTask7DiffTransfer, idxOut).Value = sumTransfer
     If sumDeposit <> 0 Then
         wsInt.Cells(RowTask7DiffRatio, idxOut).Value = Abs((sumDeposit - sumTransfer) / sumDeposit)
     Else
@@ -798,7 +714,7 @@ Sub GetVisitedBranch()
         Next key
 
         ' Sort the arrays by values
-        QuickSort valuesArray, keysArray, LBound(valuesArray), UBound(valuesArray)
+        Utils.QuickSort valuesArray, keysArray, LBound(valuesArray), UBound(valuesArray)
 
         ' Write the sorted arrays
         For i = LBound(valuesArray) To UBound(valuesArray)
@@ -812,13 +728,13 @@ Sub GetVisitedBranch()
                 strKey = CStr(result)
             End If
 
-            wsInt.Cells(RowTask5VisitedBranchKey, i).Value = "分行代碼:" & Format(strKey, "0000")
-            wsInt.Cells(RowTask5VisitedBranchValue, i).Value = valuesArray(i)
+            wsInt.Cells(RowTask5VisitedBranchXAxis, i).Value = "分行代碼:" & Format(strKey, "0000")
+            wsInt.Cells(RowTask5VisitedBranchYAxis, i).Value = valuesArray(i)
 
         Next i
     End If
 
-    CreateBarChart RowTask5VisitedBranchKey, RowTask5VisitedBranchValue, Range("Q7:X8"), "去過的分行統計", "所有交易次數"
+    CreateBarChart RowTask5VisitedBranchXAxis, RowTask5VisitedBranchYAxis, Range("Q7:X8"), "去過的分行統計", "所有交易次數"
 
 End Sub
 
@@ -888,7 +804,7 @@ Sub GetTransferAmount()
     Next key
 
     ' Sort the arrays by values
-    QuickSort valuesArray, keysArray, LBound(valuesArray), UBound(valuesArray)
+    Utils.QuickSort valuesArray, keysArray, LBound(valuesArray), UBound(valuesArray)
 
     ' Write the sorted arrays
     For i = LBound(valuesArray) To UBound(valuesArray)
@@ -927,7 +843,7 @@ Sub GetTransferAmount()
     Next key
 
     ' Sort the arrays by values
-    QuickSort valuesArray, keysArray, LBound(valuesArray), UBound(valuesArray)
+    Utils.QuickSort valuesArray, keysArray, LBound(valuesArray), UBound(valuesArray)
 
     ' Write the sorted arrays
     For i = LBound(valuesArray) To UBound(valuesArray)
@@ -998,14 +914,14 @@ Sub ProcessRowsATM()
             End If
 
             ' Initialize a New group For the current date
-            Set currentGroup = ws.Range(ws.Cells(row, 1), ws.Cells(row, maxSrcCol))
+            Set currentGroup = ws.Range(ws.Cells(row, 1), ws.Cells(row, MaxSrcCol))
 
             currentYear = y
             currentMonth = m
             currentDay = d
         Else
             ' Add the row To the current group
-            Set currentGroup = Union(currentGroup, ws.Range(ws.Cells(row, 1), ws.Cells(row, maxSrcCol)))
+            Set currentGroup = Union(currentGroup, ws.Range(ws.Cells(row, 1), ws.Cells(row, MaxSrcCol)))
 
         End If
     Next row
@@ -1019,11 +935,11 @@ Sub ProcessRowsATM()
     gCntMultiATM = 0
     gCntMultiDeposit = 0
     Dim lastCol     As Long
-    lastCol = wsInt.Cells(RowTask9ATMDepositKey, wsInt.columns.Count).End(xlToLeft).Column
+    lastCol = wsInt.Cells(RowTask9ATMDepositXAxis, wsInt.columns.Count).End(xlToLeft).Column
 
     Dim i           As Long
     For i = 1 To lastCol
-        If wsInt.Cells(RowTask9ATMDepositValue, i) >= 10 Then        ' FIXME:constants
+        If wsInt.Cells(RowTask9ATMDepositYAxis, i) >= 10 Then        ' FIXME:constants
             Utils.CountOne gCntMultiDeposit
         End If
 
@@ -1033,23 +949,23 @@ Sub ProcessRowsATM()
     Next i
 
     If gCntMultiDeposit > 0 Then
-        Range(posTask10).WrapText = True
-        Range(posTask10).Value = "在觀察區間發生了 " & CStr(gCntMultiDeposit) & " 次單日十次以上ATM 存現案例。"
+        Range(posTask10Result).WrapText = True
+        Range(posTask10Result).Value = "在觀察區間發生了 " & CStr(gCntMultiDeposit) & " 次單日十次以上ATM 存現案例。"
     End If
 
     If gCntMultiATM > 0 Then
-        Range(posTask9).WrapText = True
-        Range(posTask9).Value = "在觀察區間發生了 " & CStr(gCntMultiATM) & " 次單日多個 ATM 存現案例"
+        Range(posTask9Result).WrapText = True
+        Range(posTask9Result).Value = "在觀察區間發生了 " & CStr(gCntMultiATM) & " 次單日多個 ATM 存現案例"
     End If
 
-    CreateBarChart RowTask9ATMDepositKey, RowTask9ATMDepositValue, Range("H15:X16"), "多個ＡＴＭ存現", "次數"
+    CreateBarChart RowTask9ATMDepositXAxis, RowTask9ATMDepositYAxis, Range("H15:X16"), "多個ＡＴＭ存現", "次數"
 
-    lastCol = wsInt.Cells(RowTask6QuickKey, wsInt.columns.Count).End(xlToLeft).Column
+    lastCol = wsInt.Cells(RowTask6QuickXAxis, wsInt.columns.Count).End(xlToLeft).Column
 
-    Range(posTask6).WrapText = True
-    Range(posTask6).Value = "在觀察區間發生了 " & CStr(lastCol) & " 次快進快出案例"
+    Range(posTask6Result).WrapText = True
+    Range(posTask6Result).Value = "在觀察區間發生了 " & CStr(lastCol) & " 次快進快出案例"
 
-    CreateBarChart RowTask6QuickKey, RowTask6QuickValue, Range("H10:X10"), "快進快出", "次數"
+    CreateBarChart RowTask6QuickXAxis, RowTask6QuickYAxis, Range("H10:X10"), "快進快出", "次數"
 
 End Sub
 
@@ -1085,7 +1001,7 @@ Function ProcessGroupByATM(groupRange As Range, colName As String, idxOut As Int
                     Else
                         dictATM(strChannel) = dictATM(strChannel) + 1
                     End If
-                ElseIf Len(strChannel) < 4 And ContainsNumbers(strChannel) = True Then
+                ElseIf Len(strChannel) < 4 And Utils.ContainsNumbers(strChannel) = True Then
                     strBankID = Format(CInt(strChannel), "000")
 
                     cntATMTrans = cntATMTrans + 1
@@ -1103,8 +1019,8 @@ ContinueLoop:
     Dim result      As String
     If (dictATM.Count >= 3) Or (cntATMTrans >= 10) Then        ' FIXME: no hard-coding values
         result = Join(dictATM.keys, ";")
-        wsInt.Cells(RowTask9ATMDepositKey, idxOut).Value = colName
-        wsInt.Cells(RowTask9ATMDepositValue, idxOut).Value = cntATMTrans
+        wsInt.Cells(RowTask9ATMDepositXAxis, idxOut).Value = colName
+        wsInt.Cells(RowTask9ATMDepositYAxis, idxOut).Value = cntATMTrans
         wsInt.Cells(RowTask9ATMDepositLocation, idxOut).Value = dictATM.Count
         wsInt.Cells(RowTask9ATMDepositLocationDetail, idxOut).Value = result
         'Debug.Print "Write " & colName & " " & CStr(cntATMTrans) & " " & CStr(dictATM.Count) & " " & result
@@ -1151,10 +1067,10 @@ Function ProcessGroupByCashQuickInOut(groupRange As Range, colName As String, id
                 t = groupRange.Cells(cell.row - groupRange.row + 1, ColTSTime).Value
                 tDiff = DateDiff("n", currentTime, t)
                 If t <= 10 Then        'FIXME: 10 minutes constant
-                    HighlightRow cell.row, strReasonFast, ColorRed
+                    HighlightRow cell.row, ReasonTSFast, ColorRed
                     If bQuick = False Then
                         bQuick = True
-                        HighlightRow (cell.row - 1), strReasonFast, ColorRed
+                        HighlightRow (cell.row - 1), ReasonTSFast, ColorRed
                         cntQuick = cntQuick + 2
                     Else
                         cntQuick = cntQuick + 1
@@ -1173,8 +1089,8 @@ Function ProcessGroupByCashQuickInOut(groupRange As Range, colName As String, id
     Next cell
 
     If (cntQuick > 1) And (bTransfer = True) And (bDeposit = True) Then
-        wsInt.Cells(RowTask6QuickKey, idxOut).Value = colName
-        wsInt.Cells(RowTask6QuickValue, idxOut).Value = cntQuick
+        wsInt.Cells(RowTask6QuickXAxis, idxOut).Value = colName
+        wsInt.Cells(RowTask6QuickYAxis, idxOut).Value = cntQuick
         ProcessGroupByCashQuickInOut = True
     Else
         ProcessGroupByCashQuickInOut = False
@@ -1214,8 +1130,8 @@ Sub ProcessRowsBalance()
                 currentBalance = CDbl(ws.Cells(i, colBalance).Value)
             Else
                 ' Write the date and balance to the new rows
-                wsInt.Cells(RowTask11BalanceKey, targetCol).Value = currentDate
-                wsInt.Cells(RowTask11BalanceValue, targetCol).Value = currentBalance
+                wsInt.Cells(RowTask11BalanceXAxis, targetCol).Value = currentDate
+                wsInt.Cells(RowTask11BalanceYAxis, targetCol).Value = currentBalance
 
                 ' Update currentDate and currentBalance for the new date
                 currentDate = ws.Cells(i, ColTSDate).Value
@@ -1227,10 +1143,10 @@ Sub ProcessRowsBalance()
     Next i
     ' Write the last date and balance to the final row
 
-    wsInt.Cells(RowTask11BalanceKey, targetCol).Value = currentDate
-    wsInt.Cells(RowTask11BalanceValue, targetCol).Value = currentBalance
+    wsInt.Cells(RowTask11BalanceXAxis, targetCol).Value = currentDate
+    wsInt.Cells(RowTask11BalanceYAxis, targetCol).Value = currentBalance
 
-    CreateBarChart RowTask11BalanceKey, RowTask11BalanceValue, Range("H17:X17"), "日期", "餘額"
+    CreateBarChart RowTask11BalanceXAxis, RowTask11BalanceYAxis, Range("H17:X17"), "日期", "餘額"
 
     ' Compute the date difference
 
@@ -1244,18 +1160,18 @@ Sub ProcessRowsBalance()
 
     Dim lastCol         As Integer
 
-    lastCol = wsInt.Cells(RowTask11BalanceKey, ws.columns.Count).End(xlToLeft).Column
+    lastCol = wsInt.Cells(RowTask11BalanceXAxis, ws.columns.Count).End(xlToLeft).Column
 
-    startDate = wsInt.Cells(RowTask11BalanceKey, 1).Value
-    endDate = wsInt.Cells(RowTask11BalanceKey, lastCol).Value
+    startDate = wsInt.Cells(RowTask11BalanceXAxis, 1).Value
+    endDate = wsInt.Cells(RowTask11BalanceXAxis, lastCol).Value
     dayDiff = DateDiff("d", startDate, endDate)
 
     dayTotal = dayDiff + 1
     idxDate = 1
 
     cntUnderDays = 0
-    currentDate = wsInt.Cells(RowTask11BalanceKey, idxDate).Value
-    currentValue = wsInt.Cells(RowTask11BalanceValue, idxDate).Value
+    currentDate = wsInt.Cells(RowTask11BalanceXAxis, idxDate).Value
+    currentValue = wsInt.Cells(RowTask11BalanceYAxis, idxDate).Value
     If currentValue <= 1000 Then        ' FIXME: make it constant]
         blUnderThreshold = True
     Else
@@ -1272,8 +1188,8 @@ Sub ProcessRowsBalance()
             ' matched
 
             idxDate = idxDate + 1
-            currentDate = wsInt.Cells(RowTask11BalanceKey, idxDate).Value
-            currentValue = wsInt.Cells(RowTask11BalanceValue, idxDate).Value
+            currentDate = wsInt.Cells(RowTask11BalanceXAxis, idxDate).Value
+            currentValue = wsInt.Cells(RowTask11BalanceYAxis, idxDate).Value
             If currentValue <= 1000 Then        ' FIXME: make it constant
                 blUnderThreshold = True
             Else
@@ -1284,8 +1200,8 @@ Sub ProcessRowsBalance()
 
     Next i
 
-    Range(posTask11).WrapText = True
-    Range(posTask11).Value = "在觀察區間 " & CStr(dayTotal) & " 天中，有 " & CStr(cntUnderDays) & " 天每日存款餘額少於1000元。"
+    Range(posTask11Result).WrapText = True
+    Range(posTask11Result).Value = "在觀察區間 " & CStr(dayTotal) & " 天中，有 " & CStr(cntUnderDays) & " 天每日存款餘額少於1000元。"
     Debug.Print "total days Is " & CStr(dayTotal) & " under days Is " & CStr(cntUnderDays)
 
 End Sub
@@ -1328,14 +1244,13 @@ Private Sub Analyze()
 
     ws.Range(posRunStatus).Value = "清除前次分析資料"
 
-    RemoveAllCharts SheetNameMain
-    'Charts.RemoveAllCharts Worksheets(SheetNameMain)
+    ExcelUtils.RemoveAllCharts SheetNameMain
 
-    ClearSheet SheetNameIntermediate
+    ExcelUtils.ClearSheet SheetNameIntermediate
 
-    ClearSheet SheetNameSimple, False
+    ExcelUtils.ClearSheet SheetNameSimple, False
 
-    ClearSheet SheetNameMoney
+    ExcelUtils.ClearSheet SheetNameMoney
 
     ws.Range("F2:F30").ClearContents
 
@@ -1461,23 +1376,23 @@ Sub FillSimplePage(arrColumnIDs() As Variant)
         If VarType(wsDestination.Cells(i, timeCol).Value) = vbDouble Then
             cellTime = wsDestination.Cells(i, timeCol).Value
             If cellTime >= TimeValue("0:00:00") And cellTime <= TimeValue("4:00:00") Then
-                HighlightRow i, strReasonMorning, ColorBlue
+                HighlightRow i, ReasonTSInMorning, ColorBlue
             End If
         End If
         ' Check amount
         If (Not IsEmpty(wsDestination.Cells(i, "D")) Or Not IsEmpty(wsDestination.Cells(i, "E"))) Then
             If IsNumeric(wsDestination.Cells(i, "D").Value) And wsDestination.Cells(i, "D").Value > 100000 Then
                 If wsDestination.Cells(i, "D").Value > 500000 Then
-                    HighlightRow i, strReasonLarge, ColorPink
+                    HighlightRow i, ReasonTSLargeAmount, ColorPink
                 Else
-                    HighlightRow i, strReasonLarge, ColorOrange
+                    HighlightRow i, ReasonTSLargeAmount, ColorOrange
                 End If
 
             ElseIf IsNumeric(wsDestination.Cells(i, "E").Value) And wsDestination.Cells(i, "E").Value > 100000 Then
                 If wsDestination.Cells(i, "E").Value > 500000 Then
-                    HighlightRow i, strReasonLarge, ColorPink
+                    HighlightRow i, ReasonTSLargeAmount, ColorPink
                 Else
-                    HighlightRow i, strReasonLarge, ColorOrange
+                    HighlightRow i, ReasonTSLargeAmount, ColorOrange
                 End If
             End If
         End If
@@ -1487,7 +1402,7 @@ Sub FillSimplePage(arrColumnIDs() As Variant)
         If Not IsEmpty(strAcc) And VarType(strAcc) = vbString Then
             If DictBlacklist.Exists(strAcc) Then
                 'Debug.Print " 警示戶　hit!!! " & strAcc
-                HighlightRow i, strReasonAlert, ColorRed
+                HighlightRow i, ReasonDWLAlert, ColorRed
             End If
         End If
 
@@ -1531,60 +1446,6 @@ Sub SetEditboxText(ctrlName As String, Text As String)
     edit.Object.Text = Text
 
 End Sub
-
-Sub QuickSort(ByRef arrValues() As Variant, ByRef arrKeys() As Variant, ByVal low As Long, ByVal high As Long)
-    Dim pivot       As Variant
-    Dim i           As Long
-    Dim j           As Long
-    Dim tempValue   As Variant
-    Dim tempKey     As Variant
-    i = low
-    j = high
-    pivot = arrValues((low + high) \ 2)
-    Do While i <= j
-        Do While arrValues(i) > pivot
-            i = i + 1
-        Loop
-        Do While arrValues(j) < pivot
-            j = j - 1
-        Loop
-        If i <= j Then
-            ' Swap values
-            tempValue = arrValues(i)
-            arrValues(i) = arrValues(j)
-            arrValues(j) = tempValue
-            ' Swap keys
-            tempKey = arrKeys(i)
-            arrKeys(i) = arrKeys(j)
-            arrKeys(j) = tempKey
-            i = i + 1
-            j = j - 1
-        End If
-    Loop
-    If low < j Then QuickSort arrValues, arrKeys, low, j
-    If i < high Then QuickSort arrValues, arrKeys, i, high
-End Sub
-
-Function ContainsNumbers(inputString As String) As Boolean
-    Dim i           As Integer
-    Dim charCode    As Integer
-    Dim hasNumbers  As Boolean
-    ' Initialize variables
-    hasNumbers = False
-    ' Loop through each character in the string
-    For i = 1 To Len(inputString)
-        ' Check if the character is a number (ASCII code between 48 and 57)
-        charCode = Asc(Mid(inputString, i, 1))
-        If charCode >= 48 And charCode <= 57 Then
-            hasNumbers = True
-        Else
-            hasNumbers = False
-            Exit For
-        End If
-    Next i
-    ' Return the result
-    ContainsNumbers = hasNumbers
-End Function
 
 Sub MergeCellsByDate()
     Dim lastRow     As Long
@@ -1640,7 +1501,7 @@ Private Sub FormatData()
 
     Range(posRunStatus).Value = "開始整理"
 
-    ClearSheet SheetNameInputData
+    ExcelUtils.ClearSheet SheetNameInputData
 
     If wsIn.Range("A1") = "" And InStr(1, wsIn.Range("A4"), "客戶") = 1 Then
         MainAccName = wsIn.Range("B4")
@@ -1838,7 +1699,7 @@ Private Sub FormatData()
                 strChan = Trim("繳稅" & " " & strChan)
             ElseIf strNote = "一卡通" Then
                 strChan = Trim("一卡通" & " " & strChan)
-            ElseIf Len(strNote) < 4 And ContainsNumbers(strNote) = True Then
+            ElseIf Len(strNote) < 4 And Utils.ContainsNumbers(strNote) = True Then
                 strChan = "跨行機台"        ' (" & Format(CInt(strNote), "000") & ")"
             End If
 
@@ -2085,7 +1946,7 @@ Sub CreatePivotTables()
         .PivotFields("交易摘要").ClearAllFilters
 
         ' 有這個 item 才用這個 item filter
-        bExisted04 = Utils.CheckPivotItemExisted(PivotTable, "交易摘要", "04本行轉帳")
+        bExisted04 = ExcelUtils.CheckPivotItemExisted(PivotTable, "交易摘要", "04本行轉帳")
         If bExisted04 = True Then
             .PivotFields("交易摘要").CurrentPage = "04本行轉帳"
         End If
@@ -2171,7 +2032,7 @@ Sub CreatePivotTables()
         .PivotFields("交易摘要").ClearAllFilters
 
         ' 有這個 item 才用這個 item filter
-        bExisted03 = Utils.CheckPivotItemExisted(PivotTable, "交易摘要", "03跨行轉帳")
+        bExisted03 = ExcelUtils.CheckPivotItemExisted(PivotTable, "交易摘要", "03跨行轉帳")
         If bExisted03 = True Then
             .PivotFields("交易摘要").CurrentPage = "03跨行轉帳"
         End If
@@ -2334,7 +2195,7 @@ Sub CreatePivotTables()
         .PivotFields("交易摘要").ClearAllFilters
 
         ' 有這個 item 才用這個 item filter
-        bExisted03 = Utils.CheckPivotItemExisted(PivotTable, "交易摘要", "03跨行轉帳")
+        bExisted03 = ExcelUtils.CheckPivotItemExisted(PivotTable, "交易摘要", "03跨行轉帳")
         If bExisted03 = True Then
             .PivotFields("交易摘要").CurrentPage = "03跨行轉帳"
         End If
@@ -2419,7 +2280,7 @@ Sub CreatePivotTables()
             .PivotFields("交易摘要").ClearAllFilters
 
             ' 有這個 item 才用這個 item filter
-            bExisted01 = Utils.CheckPivotItemExisted(PivotTable, "交易摘要", "01現金交易")
+            bExisted01 = ExcelUtils.CheckPivotItemExisted(PivotTable, "交易摘要", "01現金交易")
             If bExisted01 = True Then
                 .PivotFields("交易摘要").CurrentPage = "01現金交易"
             End If
@@ -2465,7 +2326,7 @@ Sub CreatePivotTables()
             .PivotFields("交易摘要").ClearAllFilters
 
             ' 有這個 item 才用這個 item filter
-            bExisted01 = Utils.CheckPivotItemExisted(PivotTable, "交易摘要", "01現金交易")
+            bExisted01 = ExcelUtils.CheckPivotItemExisted(PivotTable, "交易摘要", "01現金交易")
             If bExisted01 = True Then
                 .PivotFields("交易摘要").CurrentPage = "01現金交易"
             End If
@@ -2525,7 +2386,7 @@ Sub CreatePivotTables()
             .PivotFields("交易摘要").ClearAllFilters
 
             ' 有這個 item 才用這個 item filter
-            bExisted01 = Utils.CheckPivotItemExisted(PivotTable, "交易摘要", "01現金交易")
+            bExisted01 = ExcelUtils.CheckPivotItemExisted(PivotTable, "交易摘要", "01現金交易")
             If bExisted01 = True Then
                 .PivotFields("交易摘要").CurrentPage = "01現金交易"
             End If
@@ -2571,7 +2432,7 @@ Sub CreatePivotTables()
             .PivotFields("交易摘要").ClearAllFilters
 
             ' 有這個 item 才用這個 item filter
-            bExisted01 = Utils.CheckPivotItemExisted(PivotTable, "交易摘要", "01現金交易")
+            bExisted01 = ExcelUtils.CheckPivotItemExisted(PivotTable, "交易摘要", "01現金交易")
             If bExisted01 = True Then
                 .PivotFields("交易摘要").CurrentPage = "01現金交易"
             End If
@@ -2605,27 +2466,7 @@ Sub CreatePivotTables()
     End If
     ' End of ATM related PivotTables
 
-    ' Format headers
-    With ws.Cells.Font
-        .name = "微軟正黑體"
-        .Size = 11
-        '   .Bold = False
-    End With
-
-    Dim cell        As Range
-    For Each cell In ws.UsedRange
-        If IsNumeric(cell.Value) And cell.NumberFormat = "#,##0.00" Then
-            cell.HorizontalAlignment = xlRight
-        Else
-            cell.HorizontalAlignment = xlCenter
-
-        End If
-
-    Next cell
-
-    For i = 1 To 27
-        ws.columns(i).AutoFit
-    Next i
+    ExcelUtils.SetSheetDefStyle SheetNameMoney
     ws.Activate
     ActiveWindow.ScrollRow = 1
 End Sub
@@ -2655,47 +2496,6 @@ Function GetKVPairsToDictOld(wsRef As Worksheet, colKey As String, colVal As Str
     Set GetKVPairsToDict = dict
 
 End Function
-
-' Utility functions, Just use them
-
-Sub ClearSheet(sheetName As String, Optional clearAll As Boolean = True)
-    Dim ws          As Worksheet
-    ' Check If the sheet exists
-    On Error Resume Next
-    Set ws = Worksheets(sheetName)
-    On Error GoTo 0
-    ' If the sheet exists, clear all data And formats
-    If Not ws Is Nothing Then
-        ws.Rows.Hidden = False
-        ws.Cells.UnMerge
-        If clearAll = True Then
-            ws.Cells.Clear
-        Else
-            ws.Rows("7:1048576").Clear
-        End If
-
-        ws.Rows("1:7").Interior.color = ColorWhite
-    Else
-        MsgBox "Sheet        '" & sheetName & "' Not found.", vbExclamation
-    End If
-End Sub
-
-Sub RemoveAllCharts(sheetName As String)
-    Dim ws          As Worksheet
-    Dim chartObj    As chartObject
-    ' Check If the sheet exists
-    On Error Resume Next
-    Set ws = Worksheets(sheetName)
-    On Error GoTo 0
-    ' If the sheet exists, remove all charts
-    If Not ws Is Nothing Then
-        For Each chartObj In ws.ChartObjects
-            chartObj.Delete
-        Next chartObj
-    Else
-        MsgBox "Sheet        '" & sheetName & "' Not found.", vbExclamation
-    End If
-End Sub
 
 Function IsThresholdArrayEmpty(arr As Variant) As Boolean
     If UBound(arr) = 1 And arr(1) = EmptyArrayValue Then
@@ -2742,57 +2542,3 @@ Sub CreateBarChart(rowIndex1 As Integer, rowIndex2 As Integer, targetPosition As
     chartObj.Chart.Axes(xlValue, xlPrimary).AxisTitle.Text = yValue
     chartObj.Chart.HasLegend = False
 End Sub
-
-' This function may be deleted
-Function DrawMarker(resultArray() As Long, colOut As Integer, taskID As Integer)
-    Dim ws          As Worksheet
-    Set ws = ThisWorkbook.Worksheets(SheetNameInputData)
-    Dim wsInt       As Worksheet
-    Set wsInt = ThisWorkbook.Worksheets(SheetNameIntermediate)
-    Dim wsOut          As Worksheet
-    Set wsOut = ThisWorkbook.Worksheets(SheetNameSimple)
-
-    Dim i           As Integer
-    Dim dateValue   As Date
-    lastRow = ws.Cells(ws.Rows.Count, ColTSDate).End(xlUp).row
-
-    With wsOut
-        For i = 1 To 6        'FIXME: make it a constant
-            .columns(i).ColumnWidth = 2
-        Next i
-    End With
-
-    ' Print the result To the Immediate window
-    For i = LBound(resultArray) To UBound(resultArray)
-        'Debug.Print "check value: " & CStr(wsInt.Cells(RowTask23TotalAmountKey, resultArray(i)).Value)
-        Dim targetY, targetM As Integer
-
-        If IsThresholdArrayEmpty(resultArray) = False Then
-            If taskID = task2TotalAmount Then
-                targetY = year(wsInt.Cells(RowTask23TotalAmountKey, resultArray(i)).Value)
-                targetM = month(wsInt.Cells(RowTask23TotalAmountKey, resultArray(i)).Value)
-            ElseIf taskID = task1TotalCount Then
-                targetY = year(wsInt.Cells(RowTask1TotalCountKey, resultArray(i)).Value)
-                targetM = month(wsInt.Cells(RowTask1TotalCountKey, resultArray(i)).Value)
-            ElseIf taskID = task3AbsoluteAmount Then
-                targetY = year(wsInt.Cells(RowTask23TotalAmountKey, resultArray(i)).Value)
-                targetM = month(wsInt.Cells(RowTask23TotalAmountKey, resultArray(i)).Value)
-            Else
-                MsgBox "no such task " & CStr(taskID)
-            End If
-        End If
-
-        Dim d       As Integer
-
-        For row = RowDataBegin To lastRow
-            dateValue = ws.Cells(row, ColTSDate).Value
-            y = year(dateValue)
-            m = month(dateValue)
-
-            If y = targetY And m = targetM Then
-                wsOut.Cells(row, colOut).Interior.color = ColorRed
-            End If
-
-        Next row
-    Next i
-End Function

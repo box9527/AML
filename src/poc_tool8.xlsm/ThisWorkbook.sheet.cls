@@ -11,7 +11,7 @@ Private Sub Workbook_Open()
         .cbOccurrence.AddItem "至少1次"
         .cbOccurrence.AddItem "至少3次"
         .cbOccurrence.AddItem "至少5次"
-
+        .cbOccurrence.AddItem "至少10次"
         .cbOpponent.AddItem "所有人"
         .cbOpponent.AddItem "指定帳戶"
         '.cbOpponent.AddItem "任一帳戶" ' TODO:

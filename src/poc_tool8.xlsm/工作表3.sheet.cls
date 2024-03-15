@@ -293,8 +293,8 @@ Sub TraverseRowsByTimeWindow(ByVal ws As Worksheet)
 
     Dim bUnique As Boolean
 
-    Dim amtSingleUppB As Double
-    Dim amtSingleLowB As Double
+    Dim amtSingleMax As Double
+    Dim amtSingleMin As Double
     Dim amtDiff     As Double
     Dim amtBalanceMax As Double
     Dim amtAccMax   As Double
@@ -302,8 +302,8 @@ Sub TraverseRowsByTimeWindow(ByVal ws As Worksheet)
     Dim chkSomeAcc  As Boolean
     Dim strSomeAcc  As String
 
-    Dim chkSingleUppB As Boolean
-    Dim chkSingleLowB As Boolean
+    Dim chkSingleMax As Boolean
+    Dim chkSingleMin As Boolean
     Dim chkDiff     As Boolean
     Dim chkBalanceMax As Boolean
     Dim chkAccMax   As Boolean
@@ -328,19 +328,19 @@ Sub TraverseRowsByTimeWindow(ByVal ws As Worksheet)
         chkSomeAcc = True
     End If
 
-    chkSingleLowB = False
-    chkSingleUppB = False
+    chkSingleMin = False
+    chkSingleMax = False
     chkDiff = False
     chkBalanceMax = False
     chkAccMax = False
     If Trim(Range(txtAmtMin)) <> "" Then
-        chkSingleLowB = True
-        amtSingleLowB = Range(txtAmtMin)
+        chkSingleMin = True
+        amtSingleMin = Range(txtAmtMin)
     End If
 
     If Trim(Range(txtAmtMax)) <> "" Then
-        chkSingleUppB = True
-        amtSingleUppB = Range(txtAmtMax)
+        chkSingleMax = True
+        amtSingleMax = Range(txtAmtMax)
     End If
 
     If Trim(Range(txtAmtDf)) <> "" Then
@@ -387,6 +387,8 @@ Sub TraverseRowsByTimeWindow(ByVal ws As Worksheet)
         minOccur = 3
     ElseIf strOccur = "至少5次" Then
         minOccur = 5
+    ElseIf strOccur = "至少10次" Then
+        minOccur = 10
     Else
         MsgBox "unknown occurrence setting!" & strOccur
         Exit Sub
@@ -558,11 +560,11 @@ Sub TraverseRowsByTimeWindow(ByVal ws As Worksheet)
 
             amtTxn = amtDeposit + amtWithdraw
             sumTxn = sumTxn + amtTxn
-            If (chkSingleUppB = True) And (amtTxn > amtSingleUppB) Then
+            If (chkSingleMax = True) And (amtTxn > amtSingleMax) Then
                 GoTo ContinueLoop
             End If
 
-            If (chkSingleLowB = True) And (amtTxn < amtSingleLowB) Then
+            If (chkSingleMin = True) And (amtTxn < amtSingleMin) Then
                 GoTo ContinueLoop
             End If
 
@@ -619,7 +621,7 @@ Sub TraverseRowsByTimeWindow(ByVal ws As Worksheet)
 
             ' Do something (e.g., highlight the row or display a message)
 
-            If (chkSingleLowB = True) Or (chkSingleUppB = True) Then
+            If (chkSingleMin = True) Or (chkSingleMax = True) Then
                 If amtDeposit > 0 Then
                     ws.Cells(j, colDeposit).Font.color = ColorWhite
                     ws.Cells(j, colDeposit).Interior.color = ColorBlue
@@ -636,7 +638,8 @@ ContinueLoop:
         If cntHit < minOccur Then        ' If matched, frame it
             GoTo EndOfMainLoop
         Else
-            If (chkSingleLowB = False) And (chkSingleUppB = False) And (chkAccMax = False) And (chkDiff = False) And (chkBalanceMax = False) Then
+            If (chkSingleMin = False) And (chkSingleMax = False) And (chkAccMax = False) And (chkDiff = False) And (chkBalanceMax = False) Then
+                ' 個數超過
                 DrawRedThickBorder Range("B" & CStr(i) & ":" & lastCol & CStr(j - 1))
             End If
         End If
@@ -662,11 +665,24 @@ ContinueLoop:
 
         End If
 
-        ' Check condition
+        ' Check condition 取交集
+        Dim bLowBalance As Boolean
         Dim bExceedAcc  As Boolean
-        bExceedAcc = False
-        If chkAccMax = True Then
+        Dim bSmallDiff  As Boolean
 
+        bExceedAcc = False
+        bLowBalance = False
+        bSmallDiff = False
+
+        ' Check balance amtBalance
+        If (chkBalanceMax = True) And (amtBalance < amtBalanceMax) Then
+            ws.Cells(j - 1, colBalance).Font.color = ColorWhite
+            ws.Cells(j - 1, colBalance).Interior.color = ColorBlue
+            bLowBalance = True
+        End If
+
+
+        If chkAccMax = True Then
             If typeDeposit = True And typeWithdraw = True Then
                 If (sumTxn) > amtAccMax Then
                     bExceedAcc = True
@@ -680,26 +696,25 @@ ContinueLoop:
                     bExceedAcc = True
                 End If
             End If
-            If (bExceedAcc = True) And (chkDiff = False) Then
-                DrawRedThickBorder Range("B" & CStr(i) & ":" & lastCol & CStr(j - 1))
-            End If
         End If
 
         If chkDiff = True Then
-            If (sumWithdraw > 0) And (sumDeposit > 0) Then
+            If (sumWithdraw >= 0) And (sumDeposit >= 0) Then
                 If Abs(sumWithdraw - sumDeposit) < amtDiff Then
-                    If (chkAccMax = False) Or ((chkAccMax = False) And (bExceedAcc = True)) Then
-                        DrawRedThickBorder Range("B" & CStr(i) & ":" & lastCol & CStr(j - 1))
-                    End If
+                    bSmallDiff = True
                 End If
             End If
         End If
 
-        ' Check balance amtBalance
-        If (chkBalanceMax = True) And (amtBalance < amtBalanceMax) Then
-            ws.Cells(j - 1, colBalance).Font.color = ColorWhite
-            ws.Cells(j - 1, colBalance).Interior.color = ColorBlue
-            DrawRedThickBorder Range("B" & CStr(j - 1) & ":" & lastCol & CStr(j - 1))
+        ' Draw borders
+        If (chkAccMax = True) Or (chkDiff = True) Or (chkBalanceMax = True) Then
+            If Not (chkAccMax Xor bExceedAcc) Then
+                If Not (chkDiff Xor bSmallDiff) Then
+                    If Not (chkBalanceMax Xor bLowBalance) Then
+                        DrawRedThickBorder Range("B" & CStr(i) & ":" & lastCol & CStr(j - 1))
+                    End If
+                End If
+            End If
         End If
 
 EndOfMainLoop:
@@ -807,6 +822,8 @@ Sub DrawRedThickBorder(rng As Range)
         .Weight = xlMedium        ' Thick border
     End With
 End Sub
+
+
 
 Private Sub Worksheet_Activate()
     gLabelCur = Range(cbLabel).Value

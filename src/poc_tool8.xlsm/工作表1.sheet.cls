@@ -53,16 +53,6 @@ Function LookupBranchInfo(branchID As Variant) As Variant
     End If
 End Function
 
-Sub HighlightRow(row As Long, reason As String, color As Long)
-    Exit Sub        ' Disable the function temporaily
-    Dim wsOut          As Worksheet
-    Set wsOut = ThisWorkbook.Worksheets(SheetNameSimple)
-
-    wsOut.Cells(row, ColAlertReason).Value = wsOut.Cells(row, ColAlertReason).Value & " " & reason
-    wsOut.Rows(row).Font.color = color
-
-End Sub
-
 Function FindMonthsExceedingThreshold(dateRow As Integer, amountRow As Integer, taskID As Integer) As Variant
     Dim ws          As Worksheet
     Dim lastColumn  As Long
@@ -549,7 +539,7 @@ Function ProcessGroupByDay(groupRange As Range, colName As String, idxOut As Lon
         If IsNumeric(cell.Value) Then
             If cell.Value >= 400000 And cell.Value < 500000 Then        'FIXME: this should be from setting, 不確定lower bound
                 cntSuspicious = cntSuspicious + 1
-                HighlightRow cell.row, ReasonCloseTo50w, ColorRed
+                ExcelUtils.HighlightRow SheetNameSimple, cell.row, ReasonCloseTo50w, ColorRed
             End If
         End If
     Next cell
@@ -596,10 +586,10 @@ Function ProcessGroupByDaySmallAmount(groupRange As Range, colName As String, id
         If cell.Text = "03跨行轉帳" Or cell.Text = "04本行轉帳" Then
             If amount = 1 Then
                 cntOneDollar = cntOneDollar + 1
-                HighlightRow cell.row, ReasonSmallTSAmount, ColorRed
+                ExcelUtils.HighlightRow SheetNameSimple, cell.row, ReasonSmallTSAmount, ColorRed
             ElseIf amount > 1 And amount < 100 Then
                 cntHundred = cntHundred + 1
-                HighlightRow cell.row, ReasonSmallTSAmount, ColorPink
+                ExcelUtils.HighlightRow SheetNameSimple, cell.row, ReasonSmallTSAmount, ColorPink
             End If
 
         End If
@@ -1067,10 +1057,10 @@ Function ProcessGroupByCashQuickInOut(groupRange As Range, colName As String, id
                 t = groupRange.Cells(cell.row - groupRange.row + 1, ColTSTime).Value
                 tDiff = DateDiff("n", currentTime, t)
                 If t <= 10 Then        'FIXME: 10 minutes constant
-                    HighlightRow cell.row, ReasonTSFast, ColorRed
+                    ExcelUtils.HighlightRow SheetNameSimple, cell.row, ReasonTSFast, ColorRed
                     If bQuick = False Then
                         bQuick = True
-                        HighlightRow (cell.row - 1), ReasonTSFast, ColorRed
+                        ExcelUtils.HighlightRow SheetNameSimple, (cell.row - 1), ReasonTSFast, ColorRed
                         cntQuick = cntQuick + 2
                     Else
                         cntQuick = cntQuick + 1
@@ -1376,23 +1366,23 @@ Sub FillSimplePage(arrColumnIDs() As Variant)
         If VarType(wsDestination.Cells(i, timeCol).Value) = vbDouble Then
             cellTime = wsDestination.Cells(i, timeCol).Value
             If cellTime >= TimeValue("0:00:00") And cellTime <= TimeValue("4:00:00") Then
-                HighlightRow i, ReasonTSInMorning, ColorBlue
+                ExcelUtils.HighlightRow SheetNameSimple, i, ReasonTSInMorning, ColorBlue
             End If
         End If
         ' Check amount
         If (Not IsEmpty(wsDestination.Cells(i, "D")) Or Not IsEmpty(wsDestination.Cells(i, "E"))) Then
             If IsNumeric(wsDestination.Cells(i, "D").Value) And wsDestination.Cells(i, "D").Value > 100000 Then
                 If wsDestination.Cells(i, "D").Value > 500000 Then
-                    HighlightRow i, ReasonTSLargeAmount, ColorPink
+                    ExcelUtils.HighlightRow SheetNameSimple, i, ReasonTSLargeAmount, ColorPink
                 Else
-                    HighlightRow i, ReasonTSLargeAmount, ColorOrange
+                    ExcelUtils.HighlightRow SheetNameSimple, i, ReasonTSLargeAmount, ColorOrange
                 End If
 
             ElseIf IsNumeric(wsDestination.Cells(i, "E").Value) And wsDestination.Cells(i, "E").Value > 100000 Then
                 If wsDestination.Cells(i, "E").Value > 500000 Then
-                    HighlightRow i, ReasonTSLargeAmount, ColorPink
+                    ExcelUtils.HighlightRow SheetNameSimple, i, ReasonTSLargeAmount, ColorPink
                 Else
-                    HighlightRow i, ReasonTSLargeAmount, ColorOrange
+                    ExcelUtils.HighlightRow SheetNameSimple, i, ReasonTSLargeAmount, ColorOrange
                 End If
             End If
         End If
@@ -1402,7 +1392,7 @@ Sub FillSimplePage(arrColumnIDs() As Variant)
         If Not IsEmpty(strAcc) And VarType(strAcc) = vbString Then
             If DictBlacklist.Exists(strAcc) Then
                 'Debug.Print " 警示戶　hit!!! " & strAcc
-                HighlightRow i, ReasonDWLAlert, ColorRed
+                ExcelUtils.HighlightRow SheetNameSimple, i, ReasonDWLAlert, ColorRed
             End If
         End If
 

@@ -2,9 +2,9 @@ Attribute VB_Name = "ExcelUtils"
 
 Public Function CheckPivotItemExisted(objPivotTable As PivotTable, strPivotFieldName As String, strPivotItemName As String) As Boolean
     '==========================
-    ' ³o¸Ì¥i¯à·|¦]¬°¸ÑªR¥X¨Óªº¥æ©öºK­n¤£¥]§t"03¸ó¦æÂà±b"¦Ó¥¢±Ñ¡A
-    ' ¥[¤W¤@­Ó For loop Check¡AÀË¬d¨ì¦³item¡A´NÂ÷¶}¡C
-    '.PivotFields("¥æ©öºK­n").CurrentPage = "03¸ó¦æÂà±b"
+    ' é€™è£¡å¯èƒ½æœƒå› ç‚ºè§£æå‡ºä¾†çš„äº¤æ˜“æ‘˜è¦ä¸åŒ…å«"03è·¨è¡Œè½‰å¸³"è€Œå¤±æ•—ï¼Œ
+    ' åŠ ä¸Šä¸€å€‹ For loop Checkï¼Œæª¢æŸ¥åˆ°æœ‰itemï¼Œå°±é›¢é–‹ã€‚
+    '.PivotFields("äº¤æ˜“æ‘˜è¦").CurrentPage = "03è·¨è¡Œè½‰å¸³"
     Dim bExisted As Boolean
     For Each pivot_item In objPivotTable.PivotFields(strPivotFieldName).PivotItems
         If pivot_item.name = strPivotItemName Then
@@ -22,7 +22,7 @@ Public Function CheckPivotItemExisted(objPivotTable As PivotTable, strPivotField
 End Function
 
 Public Sub ClearSheet(sheetName As String, Optional clearAll As Boolean = True)
-    Dim ws          As Worksheet
+    Dim ws As Worksheet
     ' Check If the sheet exists
     On Error Resume Next
     Set ws = Worksheets(sheetName)
@@ -44,12 +44,14 @@ Public Sub ClearSheet(sheetName As String, Optional clearAll As Boolean = True)
 End Sub
 
 Public Sub RemoveAllCharts(sheetName As String)
-    Dim ws          As Worksheet
-    Dim chartObj    As chartObject
+    Dim ws       As Worksheet
+    Dim chartObj As chartObject
+
     ' Check If the sheet exists
     On Error Resume Next
     Set ws = Worksheets(sheetName)
     On Error GoTo 0
+
     ' If the sheet exists, remove all charts
     If Not ws Is Nothing Then
         For Each chartObj In ws.ChartObjects
@@ -61,14 +63,16 @@ Public Sub RemoveAllCharts(sheetName As String)
 End Sub
 
 Public Sub SetSheetDefStyle(sheetName As String)
-    Dim ws          As Worksheet
+    Dim ws As Worksheet
+
     On Error Resume Next
     Set ws = Worksheets(sheetName)
     On Error GoTo 0
+    
     ' If the sheet exists, set style
     If Not ws Is Nothing Then
         With ws.Cells.Font
-            .name = "·L³n¥¿¶ÂÅé"
+            .name = "å¾®è»Ÿæ­£é»‘é«”"
             .Size = 12
             '.Bold = False
         End With
@@ -90,4 +94,16 @@ Public Sub SetSheetDefStyle(sheetName As String)
     Else
         MsgBox "Sheet        '" & sheetName & "' Not found.", vbExclamation
     End If    
+End Sub
+
+Public Sub HighlightRow(sheetName As String, rowNum As Long, reason As String, color As Long)
+    Exit Sub ' Disable the function temporaily
+    Dim ws As Worksheet
+
+    On Error Resume Next
+    Set ws = Worksheets(SheetNameSimple)
+    On Error GoTo 0
+
+    ws.Cells(rowNum, ColAlertReason).Value = ws.Cells(row, ColAlertReason).Value & " " & reason
+    ws.Rows(rowNum).Font.color = color
 End Sub

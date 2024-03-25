@@ -25,17 +25,45 @@ Private Sub Workbook_Open()
         lastRow = ws.Cells(ws.Rows.Count, 1).End(xlUp).row
         .cbPattern.AddItem "¤£¨Ï¥Î"
         For i = 2 To lastRow
-            .cbPattern.AddItem ws.Cells(i, 1).Value
+            .cbPattern.AddItem ws.Cells(i, 1).value
         Next i
     End With
+
+    Dim pt As PivotTable
+    Dim rowPivot As Long
+
+    Set ws = ThisWorkbook.Sheets(SheetNameMoney)
+
+    If Not ws Is Nothing Then
+        On Error Resume Next
+        Set pt = ws.PivotTables("MyPivotTable3")
+        rowPivot = pt.TableRange1.Cells(1, 1).row
+        Set HeaderPivotTable3 = ws.Range("A" & CStr(rowPivot - 1))
+
+        Set pt = ws.PivotTables("MyPivotTable4")
+        rowPivot = pt.TableRange1.Cells(1, 1).row
+        Set HeaderPivotTable4 = ws.Range("H" & CStr(rowPivot - 1))
+
+        Set pt = ws.PivotTables("MyPivotTable5")
+        rowPivot = pt.TableRange1.Cells(1, 1).row
+        Set HeaderPivotTable5 = ws.Range("A" & CStr(rowPivot - 1))
+
+        Set pt = ws.PivotTables("MyPivotTable6")
+        rowPivot = pt.TableRange1.Cells(1, 1).row
+        Set HeaderPivotTable6 = ws.Range("H" & CStr(rowPivot - 1))
+
+
+        On Error GoTo 0
+
+    End If
 
     menu.createMenu
 End Sub
 
 Private Sub Workbook_SheetActivate(ByVal Sh As Object)
     If Sh.name = SheetNameSimple Then
-        Sh.Range("O1").Value = MainAccName
-        Sh.Range("O2").Value = MainAccId
+        Sh.Range("O1").value = MainAccName
+        Sh.Range("O2").value = MainAccId
     End If
 End Sub
 

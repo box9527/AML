@@ -96,9 +96,9 @@ Private Function GetVirtualAcc() As Object
 
     lastRow = wsRef.Cells(wsRef.Rows.Count, colKey).End(xlUp).row
     For i = 2 To lastRow
-        bank = CStr(wsRef.Cells(i, colKey).Value)
+        bank = CStr(wsRef.Cells(i, colKey).value)
         If Not IsEmpty(bank) Then
-            strRule = wsRef.Cells(i, colVal).Value & " (" & bank & " " & wsRef.Cells(i, colUsage).Value & ")"
+            strRule = wsRef.Cells(i, colVal).value & " (" & bank & " " & wsRef.Cells(i, colUsage).value & ")"
 
             prefixRule = ExtractNumbersPrefix(strRule)
             If Not dict.Exists(bank) Then
@@ -170,11 +170,11 @@ Public Function GetKVPairsToDict(wsRef As Worksheet, colKey As String, colVal As
     lastRow = wsRef.Cells(wsRef.Rows.Count, colKey).End(xlUp).row
     ' Loop through column G and add items to the dictionary
     For i = 1 To lastRow
-        item = CStr(wsRef.Cells(i, colKey).Value)
+        item = CStr(wsRef.Cells(i, colKey).value)
         If Not IsEmpty(item) Then
             If Not dict.Exists(item) Then
                 'Debug.Print "add blacklist item: " & blacklistItem
-                dict.Add item, wsRef.Cells(i, colVal).Value
+                dict.Add item, wsRef.Cells(i, colVal).value
             End If
         End If
     Next i

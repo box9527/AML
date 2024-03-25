@@ -46,7 +46,7 @@ class Productivity:
         self._cp_strict_rawdata = "rawdata-strict-tool8.xlsx"
 
         # result file
-        self.cp_combined_result = f'【工具8】異常態樣分析摘要.xlsm'
+        self.cp_combined_result = f'工具8_異常態樣分析摘要.xlsm'
 
         # 這裡的 "支出" 與 "存入" 用 "Out" 以及 "In"取代，目的是跟工具七的欄位一致
         self.rawdata_cols = {

@@ -9,7 +9,7 @@ Public Function GetLength(A As Variant) As Integer
     End If
 End Function
 
-' Check if a array contains an item with item name
+' Check if a dict contains an item with item name
 Public Function ObjectContainsItem(ByRef items As Object, itemToFind As Variant) As Boolean
     Dim bExisted As Boolean
     Dim i As Long
@@ -19,17 +19,67 @@ Public Function ObjectContainsItem(ByRef items As Object, itemToFind As Variant)
         If items(i).name = itemToFind Then
             bExisted = True
             Exit For
-            Exit Function
         End If
     Next i
 
     ' Item not found
-    bExisted = False
-    Exit Function
+    ObjectContainsItem = bExisted
 End Function
 
-Public Sub CountOne(ByRef Num As Integer)
+Public Function ArrayContainsItem(ByRef arr As Variant, itemToFind As String) As Boolean
+    Dim bExisted As Boolean
+    Dim i As Long
+
+    For i = LBound(arr) To UBound(arr)
+        If arr(i) = itemToFind Then
+            bExisted = True
+            Exit For
+        End If
+    Next i
+
+    ArrayContainsItem = bExisted
+End Function
+
+Public Sub CountOne(ByRef Num As Variant)
     Num = Num + 1
+End Sub
+
+Public Sub NormalizeCellStartEnd(ByRef cellStart As String, ByRef cellEnd As String)
+    If Len(cellStart) > 0 And Len(cellEnd) = 0 Then
+        cellEnd = cellStart
+    End If
+    If Len(cellStart) = 0 And Len(cellEnd) > 0 Then
+        cellStart = cellEnd
+    End If
+End Sub
+
+Public Sub NormalizeCellRowCol(ByRef cellRow As Long, ByRef cellCol As Long)
+    If cellRow > 0 And cellCol <= 0 Then
+        cellCol = cellRow
+    End If
+    If cellRow <= 0 And cellCol > 0 Then
+        cellRow = cellCol
+    End If
+End Sub
+
+Public Sub NormalizeDataFormat(ByRef dataFormat As String)
+    If Len(dataFormat) < 0 Or ((dataFormat <> DateFormat) And _
+    (dataFormat <> TimeFormat) And (dataFormat <> NumberFormat) And _
+    (dataFormat <> ForceStringFormat) And (dataFormat <> GeneralFormat)) Then
+        dataFormat = ForceStringFormat
+    End If
+End Sub
+
+Public Sub NormalizeDataHDirection(ByRef direction As Integer)
+    If direction <> xlLeft Or direction <> xlRight Or direction <> xlCenter Then
+        direction = xlCenter
+    End If
+End Sub
+
+Public Sub NormalizeFontSize(ByRef size As Integer)
+    If size > (FontSize * 4) Or size < FontSize Then
+        size = FontSize
+    End If
 End Sub
 
 Public Sub QuickSort(ByRef arrValues() As Variant, ByRef arrKeys() As Variant, ByVal low As Long, ByVal high As Long)
@@ -84,4 +134,12 @@ Public Function ContainsNumbers(inputString As String) As Boolean
     Next i
     ' Return the result
     ContainsNumbers = hasNumbers
+End Function
+
+Public Function IsArrayEmpty(arr As Variant) As Boolean
+    If UBound(arr) = 1 And arr(1) = EmptyArrayValue Then
+        IsArrayEmpty = True
+    Else
+        IsArrayEmpty = False
+    End If
 End Function

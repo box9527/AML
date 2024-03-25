@@ -15,7 +15,7 @@ from utils.toolkit import isfile
 
 
 class GUIApp:
-    def __init__(self, root): 
+    def __init__(self, root):
         # create the root window
         self.root = root
         self.root.title('工具八POC金流(PCMS)檔案匯入器')
@@ -29,12 +29,12 @@ class GUIApp:
         # open button
         self.open_button = ttk.Button(
             self.root,
-            text='匯入金流(PCMS)檔案 0%',
+            text='匯入金流(PCMS)檔案',
             command=self.select_file
         )
-        
+
         self.open_button.pack(expand=True)
-        
+
     def run_gui(self):
         self.root.mainloop()
 
@@ -48,10 +48,11 @@ class GUIApp:
             initialdir='/',
             filetypes=filetypes)
 
-        showinfo(
-            title='選擇的檔案',
-            message=f'選擇的檔案路徑：{filename}'
-        )
+        if False:
+            showinfo(
+                title='選擇的檔案',
+                message=f'選擇的檔案路徑：{filename}'
+            )
 
         self.file_path.set(filename)
 
@@ -81,6 +82,9 @@ class GUIApp:
             return
 
         logger.info(f'Import and Create poc_tool8 with file {filename} started.')
+        self.update_button_txt(f'{self.btn_txt} 0%')
+        time.sleep(2)
+
         self.update_button_txt(f'{self.btn_txt} 10%')
 
         # check point 1

@@ -93,7 +93,7 @@ Private Sub RefreshSearchSetting(strLabel)
     Set wsCfg = Worksheets(SheetNameLabel)
 
     If strLabel = strDisableSearch Then
-        gLabelCur = Range(cbLabel).Value
+        gLabelCur = Range(cbLabel).value
         Exit Sub
     End If
 
@@ -101,7 +101,7 @@ Private Sub RefreshSearchSetting(strLabel)
     lastRow = wsCfg.Cells(wsCfg.Rows.Count, 1).End(xlUp).row
 
     For i = 2 To lastRow
-        If wsCfg.Cells(i, 1).Value = strLabel Then
+        If wsCfg.Cells(i, 1).value = strLabel Then
             rowCfg = i
             Exit For
         End If
@@ -109,32 +109,32 @@ Private Sub RefreshSearchSetting(strLabel)
 
     If rowCfg = 1 Then
         MsgBox "無法在自訂標示設定頁找到對應設定:" & strLabel
-        Range(cbLabel).Value = gLabelCur
+        Range(cbLabel).value = gLabelCur
         'FIXME: should update pattern description here
         Exit Sub
     End If
 
     ' Fill row value to UI position
-    Range(cbWin).Value = wsCfg.Cells(rowCfg, RowInterval)
-    Range(cbOccur).Value = wsCfg.Cells(rowCfg, RowTimes)
-    Range(cbOppo).Value = wsCfg.Cells(rowCfg, RowOppo)
-    Range(chkUnique).Value = wsCfg.Cells(rowCfg, RowUnique)
-    Range(txtSomeAcc).Value = wsCfg.Cells(rowCfg, RowSomeAcc)
-    Range(chkBranch).Value = wsCfg.Cells(rowCfg, RowBranch)
-    Range(chkATM).Value = wsCfg.Cells(rowCfg, RowATM)
-    Range(chkAuto).Value = wsCfg.Cells(rowCfg, RowAuto)
-    Range(chkDeposit).Value = wsCfg.Cells(rowCfg, RowDeposit)
-    Range(chkWithdraw).Value = wsCfg.Cells(rowCfg, RowWithdraw)
-    Range(chkCash).Value = wsCfg.Cells(rowCfg, RowCash)
-    Range(txtAmtMin).Value = wsCfg.Cells(rowCfg, RowAmtMin)
-    Range(txtAmtMax).Value = wsCfg.Cells(rowCfg, RowAmtMax)
-    Range(txtAmtDf).Value = wsCfg.Cells(rowCfg, RowAmtDf)
-    Range(txtAmtLessThan).Value = wsCfg.Cells(rowCfg, RowAmtLessThan)
-    Range(txtAmtTotal).Value = wsCfg.Cells(rowCfg, RowAmtTotal)
+    Range(cbWin).value = wsCfg.Cells(rowCfg, RowInterval)
+    Range(cbOccur).value = wsCfg.Cells(rowCfg, RowTimes)
+    Range(cbOppo).value = wsCfg.Cells(rowCfg, RowOppo)
+    Range(chkUnique).value = wsCfg.Cells(rowCfg, RowUnique)
+    Range(txtSomeAcc).value = wsCfg.Cells(rowCfg, RowSomeAcc)
+    Range(chkBranch).value = wsCfg.Cells(rowCfg, RowBranch)
+    Range(chkATM).value = wsCfg.Cells(rowCfg, RowATM)
+    Range(chkAuto).value = wsCfg.Cells(rowCfg, RowAuto)
+    Range(chkDeposit).value = wsCfg.Cells(rowCfg, RowDeposit)
+    Range(chkWithdraw).value = wsCfg.Cells(rowCfg, RowWithdraw)
+    Range(chkCash).value = wsCfg.Cells(rowCfg, RowCash)
+    Range(txtAmtMin).value = wsCfg.Cells(rowCfg, RowAmtMin)
+    Range(txtAmtMax).value = wsCfg.Cells(rowCfg, RowAmtMax)
+    Range(txtAmtDf).value = wsCfg.Cells(rowCfg, RowAmtDf)
+    Range(txtAmtLessThan).value = wsCfg.Cells(rowCfg, RowAmtLessThan)
+    Range(txtAmtTotal).value = wsCfg.Cells(rowCfg, RowAmtTotal)
 
-    Worksheets(SheetNameSimple).OLEObjects("ptnDesc").Object.caption = wsCfg.Cells(rowCfg, RowDesc).Value
+    Worksheets(SheetNameSimple).OLEObjects("ptnDesc").Object.caption = wsCfg.Cells(rowCfg, RowDesc).value
 
-    gLabelCur = Range(cbLabel).Value
+    gLabelCur = Range(cbLabel).value
 End Sub
 
 Private Sub Refresh_Click()
@@ -145,7 +145,7 @@ Private Sub Refresh_Click_Int(blShowOk As Boolean)
     Dim ws          As Worksheet
     Dim enableSearch As Boolean
 
-    If Range(cbLabel).Value = strDisableSearch Then
+    If Range(cbLabel).value = strDisableSearch Then
         enableSearch = False
     Else
         enableSearch = True
@@ -186,42 +186,42 @@ Sub CheckOneByOne(ByVal ws As Worksheet)
     Dim enableLarge As Boolean
     Dim enableNearLarge As Boolean
 
-    enableBalance = Range(chkEnableBalance).Value
-    enableTxnTime = Range(chkEnableTxnTime).Value
-    enableLarge = Range(chkEnableLarge).Value
-    enableNearLarge = Range(chkEnableNearLarge).Value
+    enableBalance = Range(chkEnableBalance).value
+    enableTxnTime = Range(chkEnableTxnTime).value
+    enableLarge = Range(chkEnableLarge).value
+    enableNearLarge = Range(chkEnableNearLarge).value
 
     lastRow = ws.Cells(ws.Rows.Count, colTime).End(xlUp).row
 
     For i = RowDataBegin To lastRow
         ' Check balance
         If enableBalance = True Then
-            If VarType(ws.Cells(i, colBalance).Value) = vbDouble Then
-                If ws.Cells(i, colBalance).Value < 1000 Then
+            If VarType(ws.Cells(i, colBalance).value) = vbDouble Then
+                If ws.Cells(i, colBalance).value < 1000 Then
                     ws.Cells(i, colBalance).Font.color = ColorRed
                 End If
             End If
         End If
         ' Check amount
-        If VarType(ws.Cells(i, colDeposit).Value) = vbDouble And Not IsEmpty(ws.Cells(i, colDeposit)) Then
-            If ws.Cells(i, colDeposit).Value < 500000 And ws.Cells(i, colDeposit).Value >= 400000 Then
+        If VarType(ws.Cells(i, colDeposit).value) = vbDouble And Not IsEmpty(ws.Cells(i, colDeposit)) Then
+            If ws.Cells(i, colDeposit).value < 500000 And ws.Cells(i, colDeposit).value >= 400000 Then
                 ws.Cells(i, colDeposit).Font.color = ColorRed
             End If
 
-            If ws.Cells(i, colDeposit).Value >= 500000 Then
+            If ws.Cells(i, colDeposit).value >= 500000 Then
                 ws.Cells(i, colDeposit).Font.color = ColorRed
             End If
         End If
 
-        If VarType(ws.Cells(i, colWithdraw).Value) = vbDouble And Not IsEmpty(ws.Cells(i, colWithdraw)) Then
+        If VarType(ws.Cells(i, colWithdraw).value) = vbDouble And Not IsEmpty(ws.Cells(i, colWithdraw)) Then
             If enableNearLarge = True Then
-                If ws.Cells(i, colWithdraw).Value < 500000 And ws.Cells(i, colWithdraw).Value >= 400000 Then
+                If ws.Cells(i, colWithdraw).value < 500000 And ws.Cells(i, colWithdraw).value >= 400000 Then
                     ws.Cells(i, colWithdraw).Font.color = ColorRed
                 End If
             End If
 
             If enableLarge = True Then
-                If ws.Cells(i, colWithdraw).Value >= 500000 Then
+                If ws.Cells(i, colWithdraw).value >= 500000 Then
                     ws.Cells(i, colWithdraw).Font.color = ColorRed
                 End If
             End If
@@ -229,8 +229,8 @@ Sub CheckOneByOne(ByVal ws As Worksheet)
 
         ' Check time
         If enableTxnTime = True Then
-            If VarType(ws.Cells(i, colTime).Value) = vbDouble Then
-                cellTime = ws.Cells(i, colTime).Value
+            If VarType(ws.Cells(i, colTime).value) = vbDouble Then
+                cellTime = ws.Cells(i, colTime).value
                 If cellTime >= TimeValue("0:00:00") And cellTime <= TimeValue("4:00:00") Then
                     ws.Cells(i, colTime).Font.color = ColorRed
                 End If
@@ -238,23 +238,23 @@ Sub CheckOneByOne(ByVal ws As Worksheet)
         End If
 
         ' Check bad accounts
-        If VarType(ws.Cells(i, colAccount).Value) = vbString Then
-            strAccount = ws.Cells(i, colAccount).Value
+        If VarType(ws.Cells(i, colAccount).value) = vbString Then
+            strAccount = ws.Cells(i, colAccount).value
             If Not IsEmpty(strAccount) Then
                 If DictBlacklist.Exists(strAccount) Then
                     'Debug.Print " 警示戶　hit!!! " & strAccount
                     ws.Cells(i, colAccount).Font.color = ColorWhite
                     ws.Cells(i, colAccount).Interior.color = ColorRed
-                    ws.Cells(i, colReason).Value = "警示戶"
+                    ws.Cells(i, colReason).value = "警示戶"
                 End If
             End If
 
-            strTmp = ExtraData.CheckVAccount(ws.Cells(i, colBankID).Value, strAccount)
+            strTmp = ExtraData.CheckVAccount(ws.Cells(i, colBankID).value, strAccount)
             If strTmp <> "" Then
                 ws.Cells(i, colAccount).Font.color = ColorWhite
                 ws.Cells(i, colAccount).Interior.color = ColorRed
 
-                ws.Cells(i, colReason).Value = strTmp
+                ws.Cells(i, colReason).value = strTmp
             End If
 
         End If
@@ -308,17 +308,17 @@ Sub TraverseRowsByTimeWindow(ByVal ws As Worksheet)
     Dim chkBalanceMax As Boolean
     Dim chkAccMax   As Boolean
 
-    strWindow = Range(cbWin).Value
-    strOccur = Range(cbOccur).Value
-    strOpponent = Range(cbOppo).Value
-    useBranch = Range(chkBranch).Value
-    useATM = Range(chkATM).Value
-    useAuto = Range(chkAuto).Value
-    typeDeposit = Range(chkDeposit).Value
-    typeWithdraw = Range(chkWithdraw).Value
-    typeCash = Range(chkCash).Value
+    strWindow = Range(cbWin).value
+    strOccur = Range(cbOccur).value
+    strOpponent = Range(cbOppo).value
+    useBranch = Range(chkBranch).value
+    useATM = Range(chkATM).value
+    useAuto = Range(chkAuto).value
+    typeDeposit = Range(chkDeposit).value
+    typeWithdraw = Range(chkWithdraw).value
+    typeCash = Range(chkCash).value
 
-    bUnique = Range(chkUnique).Value
+    bUnique = Range(chkUnique).value
 
 
     chkSomeAcc = False
@@ -414,12 +414,12 @@ Sub TraverseRowsByTimeWindow(ByVal ws As Worksheet)
 
 
     ' Loop through the rows
-    nextStart = ws.Cells(RowDataBegin, colDay).MergeArea.Cells(1, 1).Value + ws.Cells(RowDataBegin, colTime).Value
+    nextStart = ws.Cells(RowDataBegin, colDay).MergeArea.Cells(1, 1).value + ws.Cells(RowDataBegin, colTime).value
     nextRowStart = RowDataBegin
     i = RowDataBegin
     While i <= lastRow
         ' Get the current date and time; Fetch the real row
-        currentTime = ws.Cells(i, colDay).MergeArea.Cells(1, 1).Value + ws.Cells(i, colTime).Value
+        currentTime = ws.Cells(i, colDay).MergeArea.Cells(1, 1).value + ws.Cells(i, colTime).value
         ' Calculate the window boundaries
         If currentTime >= nextEnd Then
             winStart = currentTime
@@ -505,7 +505,7 @@ Sub TraverseRowsByTimeWindow(ByVal ws As Worksheet)
 
             ' Get the date and time of the current row
             Dim rowDateTime As Date
-            rowDateTime = ws.Cells(j, colDay).MergeArea.Cells(1, 1).Value + ws.Cells(j, colTime).Value
+            rowDateTime = ws.Cells(j, colDay).MergeArea.Cells(1, 1).value + ws.Cells(j, colTime).value
 
             If rowDateTime < nextStart Then
                 ' Find the row ID that is the closest to nextStart
@@ -525,7 +525,7 @@ Sub TraverseRowsByTimeWindow(ByVal ws As Worksheet)
 
             ' Check If the type matched
             If chkSomeAcc = True Then
-                If strSomeAcc <> ws.Cells(j, colAccount).Value Then
+                If strSomeAcc <> ws.Cells(j, colAccount).value Then
                     GoTo ContinueLoop
                 Else
                     ws.Cells(j, colAccount).Interior.color = ColorBlue
@@ -534,7 +534,7 @@ Sub TraverseRowsByTimeWindow(ByVal ws As Worksheet)
             End If
             Dim strChan As String
 
-            strChan = ws.Cells(j, colChannel).Value
+            strChan = ws.Cells(j, colChannel).value
 
             If Not (((useBranch = True) And ((strChan = "臨櫃分行") Or (strChan = "電匯"))) Or _
                    ((useATM = True) And ((strChan = "ATM自動化設備") Or (strChan = "跨行機台"))) Or _
@@ -544,9 +544,9 @@ Sub TraverseRowsByTimeWindow(ByVal ws As Worksheet)
             End If
 
             'FIXME: check data type
-            amtBalance = CDbl(ws.Cells(j, colBalance).Value)
-            amtWithdraw = CDbl(ws.Cells(j, colWithdraw).Value)
-            amtDeposit = CDbl(ws.Cells(j, colDeposit).Value)
+            amtBalance = CDbl(ws.Cells(j, colBalance).value)
+            amtWithdraw = CDbl(ws.Cells(j, colWithdraw).value)
+            amtDeposit = CDbl(ws.Cells(j, colDeposit).value)
 
             If Not (((typeDeposit = True) And (amtDeposit > 0)) Or _
                ((typeWithdraw = True) And (amtWithdraw > 0))) _
@@ -554,7 +554,7 @@ Sub TraverseRowsByTimeWindow(ByVal ws As Worksheet)
                 GoTo ContinueLoop
             End If
 
-            If (typeCash = True) And (ws.Cells(j, colTxnType).Value <> "01現金交易") Then
+            If (typeCash = True) And (ws.Cells(j, colTxnType).value <> "01現金交易") Then
                 GoTo ContinueLoop
             End If
 
@@ -607,7 +607,7 @@ Sub TraverseRowsByTimeWindow(ByVal ws As Worksheet)
                 End If
             End If
 
-            amtBalance = ws.Cells(j, colBalance).Value
+            amtBalance = ws.Cells(j, colBalance).value
 
             cntTxn = cntTxn + 1
 
@@ -745,7 +745,7 @@ Sub ResetPage(ByVal ws As Worksheet)
     Dim cell        As Range
 
     For Each cell In ws.UsedRange
-        If Not IsEmpty(cell.Value) Then
+        If Not IsEmpty(cell.value) Then
             cell.Font.color = ColorBlack
         End If
     Next cell
@@ -826,9 +826,19 @@ End Sub
 
 
 Private Sub Worksheet_Activate()
-    gLabelCur = Range(cbLabel).Value
+    gLabelCur = Range(cbLabel).value
+
     If UpdateSimplePage = False Then
+        Dim blScreenUpdating As Boolean
+        blScreenUpdating = Application.ScreenUpdating
+        If blScreenUpdating = True Then
+            ' Fix flash issue when switching to this page at the beginning
+            Application.ScreenUpdating = False
+        End If
         Refresh_Click_Int False
         UpdateSimplePage = True
+        Application.ScreenUpdating = blScreenUpdating ' restore value
+
     End If
+
 End Sub

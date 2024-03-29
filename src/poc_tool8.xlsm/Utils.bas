@@ -44,43 +44,26 @@ Public Sub CountOne(ByRef Num As Variant)
     Num = Num + 1
 End Sub
 
-Public Sub NormalizeCellStartEnd(ByRef cellStart As String, ByRef cellEnd As String)
-    If Len(cellStart) > 0 And Len(cellEnd) = 0 Then
-        cellEnd = cellStart
-    End If
-    If Len(cellStart) = 0 And Len(cellEnd) > 0 Then
-        cellStart = cellEnd
-    End If
-End Sub
+Public Function ExtractNumbersPrefix(inputString As String) As String
+    Dim i      As Integer
+    Dim result As String
 
-Public Sub NormalizeCellRowCol(ByRef cellRow As Long, ByRef cellCol As Long)
-    If cellRow > 0 And cellCol <= 0 Then
-        cellCol = cellRow
-    End If
-    If cellRow <= 0 And cellCol > 0 Then
-        cellRow = cellCol
-    End If
-End Sub
+    ' Loop through each character in the input string
+    For i = 1 To Len(inputString)
+        ' Check if the character is a number
+        If IsNumeric(Mid(inputString, i, 1)) Then
+            ' Append the numeric character to the result
+            result = result & Mid(inputString, i, 1)
+        Else
 
-Public Sub NormalizeDataFormat(ByRef dataFormat As String)
-    If Len(dataFormat) < 0 Or ((dataFormat <> DateFormat) And _
-    (dataFormat <> TimeFormat) And (dataFormat <> NumberFormat) And _
-    (dataFormat <> ForceStringFormat) And (dataFormat <> GeneralFormat)) Then
-        dataFormat = ForceStringFormat
-    End If
-End Sub
+            Exit For
 
-Public Sub NormalizeDataHDirection(ByRef direction As Integer)
-    If direction <> xlLeft Or direction <> xlRight Or direction <> xlCenter Then
-        direction = xlCenter
-    End If
-End Sub
+        End If
+    Next i
 
-Public Sub NormalizeFontSize(ByRef size As Integer)
-    If size > (FontSize * 4) Or size < FontSize Then
-        size = FontSize
-    End If
-End Sub
+    ' Return the result containing numbers only
+    ExtractNumbersPrefix = result
+End Function
 
 Public Sub QuickSort(ByRef arrValues() As Variant, ByRef arrKeys() As Variant, ByVal low As Long, ByVal high As Long)
     Dim pivot       As Variant
@@ -142,4 +125,20 @@ Public Function IsArrayEmpty(arr As Variant) As Boolean
     Else
         IsArrayEmpty = False
     End If
+End Function
+
+Public Function SumDictValues(dict As Object) As Double
+    Dim key As Variant
+    Dim total As Double
+
+    ' Iterate through each item in the dictionary
+    For Each key In dict.keys
+        ' Add the value of the current item to the total
+        If VarType(dict(key)) = vbDouble Then
+            total = total + dict(key)
+        End If
+    Next key
+
+    ' Return the total sum
+    SumDictValues = total
 End Function

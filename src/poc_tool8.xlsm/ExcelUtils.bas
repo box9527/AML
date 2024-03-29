@@ -35,11 +35,27 @@ Public Function GetCityNameArray() As Variant
     GetCityNameArray = x
 End Function
 
+Public Function GetUiTWArray() As Variant
+    x = Split(UiTimeWindowString, ",")
+    GetUiTWArray = x
+End Function
+
+Public Function GetUiOccurArray() As Variant
+    x = Split(UiOccurrenceString, ",")
+    GetUiOccurArray = x
+End Function
+
+Public Function GetUiOpponArray() As Variant
+    x = Split(UiOpponentString, ",")
+    GetUiOpponArray = x
+End Function
+
 Public Function GetAllChannelArray() As Variant
     ch = GetATMChannelArray()
     xml = Split(XMLChannelString, ",")
 
     Dim ot As Variant
+    Dim otStr As String
     otStr = ColNoteChValMobile & "," & ColNoteChValOnline & "," & ColNoteChValPayment & "," & ColNoteChValSecurity & _
                "," & ColNoteChValFax & "," & ColNoteChValFEDI & "," & ColNoteChValTAX & "," & ColNoteChValIPASS & "," & ColNoteChValCrossBR
 
@@ -48,6 +64,20 @@ Public Function GetAllChannelArray() As Variant
     all = Split(Join(ch, ",") & "," & Join(xml, ",") & "," & Join(ot, ","), ",")
 
     GetAllChannelArray = all
+End Function
+
+Public Function GetShInDataExtraHeaderArray() As Variant
+    Dim myHeaders As Variant
+    Dim myHStr As String
+    myHStr = ",,,,,,,," & ColShInDataAmountName & ",,,,,,," & ColShInDataTSMonthName & "," & ColShInDataTSSummaryName & _
+             ",,," & ColShInDataBankCodeName & "," & ColShInDataTSTypeName & "," & ColShInDataATMLocName & _
+             "," & ColShInDataATMCityName & "," & ColShInDataATMAreaName & "," & ColShInDataBrShowName & _
+             "," & ColShInDataBranchCityName & "," & ColShInDataBranchAreaName & "," & ColShInDataTSLocName & _
+             "," & ColShInDataTSChName & "," & ColShInDataTSOClockName & "," & ColShInDataVAccCShowName & _
+             "," & ColShInDataVAccReasonName & "," & ColShInDataWAccCShowName & "," & ColShInDataPAccCShowName
+
+    myHeaders = Split(myHStr, ",")
+    GetShInDataExtraHeaderArray = myHeaders
 End Function
 
 Public Function GetShInDataColsToShSimple() As Variant()
@@ -71,6 +101,15 @@ Public Function GetShInDataColsToFillRawData() As Variant()
     GetShInDataColsToFillRawData = arrColIDs
 End Function
 
+Public Function IsMorningTime(ByRef time As Variant) As Boolean
+    Dim bIsTime As Boolean
+    If time >= TimeValue(EarlyMorningBegin) And time <= TimeValue(EarlyMorningEnd) Then
+        bIsTime = True
+    End If
+
+    IsMorningTime = bIsTime
+End Function
+
 Public Function IsAutoTSID(sid As String) As Boolean
     Dim bIsSID As Boolean
     If (sid = SelfServiceID) Or (sid = SelfServiceID_2) Then
@@ -90,6 +129,54 @@ Public Function IsAutoClerk(clerk As String) As Boolean
     IsAutoClerk = isAuto
 End Function
 
+' item 19, 2024/3/27, 保留手續費與利息後，以下暫時不會用到。
+Public Function IsSkipInSummary(Text As String) As Boolean
+    Dim bIsSkip As Boolean
+    If Text = ColSummaryHandleFee Or Text = ColSummaryInterest Then
+        bIsSkip = True
+    End If
+
+    IsSkipInSummary = bIsSkip
+End Function
+
+Private Sub NormalizeCellStartEnd(ByRef cellStart As String, ByRef cellEnd As String)
+    If Len(cellStart) > 0 And Len(cellEnd) = 0 Then
+        cellEnd = cellStart
+    End If
+    If Len(cellStart) = 0 And Len(cellEnd) > 0 Then
+        cellStart = cellEnd
+    End If
+End Sub
+
+Private Sub NormalizeCellRowCol(ByRef cellRow As Long, ByRef cellCol As Long)
+    If cellRow > 0 And cellCol <= 0 Then
+        cellCol = cellRow
+    End If
+    If cellRow <= 0 And cellCol > 0 Then
+        cellRow = cellCol
+    End If
+End Sub
+
+Private Sub NormalizeDataFormat(ByRef dataFormat As String)
+    If Len(dataFormat) < 0 Or ((dataFormat <> DateFormat) And _
+    (dataFormat <> TimeFormat) And (dataFormat <> NumberFormat) And _
+    (dataFormat <> ForceStringFormat) And (dataFormat <> GeneralFormat)) Then
+        dataFormat = ForceStringFormat
+    End If
+End Sub
+
+Private Sub NormalizeDataHDirection(ByRef direction As Integer)
+    If direction <> xlLeft Or direction <> xlRight Or direction <> xlCenter Then
+        direction = xlCenter
+    End If
+End Sub
+
+Private Sub NormalizeFontSize(ByRef size As Integer)
+    If size > (FontSize * 4) Or size < FontSize Then
+        size = FontSize
+    End If
+End Sub
+
 Public Function ConvToColTSSummary(colSummary As String) As String
     Dim trans As String
     If Len(colSummary) > 0 Then
@@ -102,7 +189,8 @@ Public Function ConvToColTSSummary(colSummary As String) As String
         ElseIf Left(colSummary, 1) = ColTSSummaryVal04KW Then
             trans = ColTSSummaryVal04
         Else
-            trans = ColTSSummaryValOt
+            ' item 17, 2024/3/18, 在3.1交易明細中的交易摘要欄位除了4類交易摘要之外，其餘都顯示原本的摘要內容。
+            trans = colSummary 'ColTSSummaryValOt
         End If
     End If
 
@@ -157,6 +245,26 @@ Public Function ConvToChannel(colNote As String, colStore As String, _
     End If
 
     ConvToChannel = channel
+End Function
+
+Public Function ConvPivotAccShowName(vAccName As String, wAccName As String) As String
+    Dim combined As String
+    Dim wan As String
+    Dim van As String
+    wan = Trim(wAccName)
+    van = Trim(vAccName)
+
+    If (Len(wan) > 0) And (Len(van) <= 0) Then
+        combined = wan
+    ElseIf (Len(wan) <= 0) And (Len(van) > 0) Then
+        combined = van
+    ElseIf (Len(wan) > 0) And (Len(van) > 0) Then
+        combined = "(" & wan & ") " & van
+    Else
+        combined = ""
+    End If
+
+    ConvPivotAccShowName = combined
 End Function
 
 Public Sub ClearSheet(sheetName As String, Optional clearAll As Boolean = True)
@@ -224,8 +332,8 @@ Public Sub ApplyFontStyle(ws As Worksheet, Optional bold As Boolean = False, _
                           Optional size As Integer = 0, Optional wrapText As Boolean = False, _
                           Optional colStart As String = "", Optional colEnd As String = "")
     If Not ws Is Nothing Then
-        Utils.NormalizeCellStartEnd colStart, colEnd
-        Utils.NormalizeFontSize size
+        NormalizeCellStartEnd colStart, colEnd
+        NormalizeFontSize size
 
         If Len(colStart) > 0 And Len(colEnd) > 0 Then
             With ws.columns(colStart & ":" & colEnd)
@@ -252,8 +360,8 @@ Public Sub ApplyRichFontStyle(ws As Worksheet, _
                           Optional fontColor As Long = ColorBlack, Optional fontInterColor As Long = ColorWhite, _
                           Optional enableFilter As Boolean = False)
     If Not ws Is Nothing Then
-        Utils.NormalizeCellStartEnd cellStart, cellEnd
-        Utils.NormalizeDataHDirection direction
+        NormalizeCellStartEnd cellStart, cellEnd
+        NormalizeDataHDirection direction
 
         If Len(cellStart) > 0 And Len(cellEnd) > 0 Then
             With ws.Range(cellStart & ":" & cellEnd)
@@ -273,8 +381,8 @@ End Sub
 Public Sub ApplyDataFormat(ws As Worksheet, dataFormat As String, _
                            Optional cellStart As String = "", Optional cellEnd As String = "")
     If Not ws Is Nothing Then
-        Utils.NormalizeCellStartEnd cellStart, cellEnd
-        Utils.NormalizeDataFormat dataFormat
+        NormalizeCellStartEnd cellStart, cellEnd
+        NormalizeDataFormat dataFormat
 
         If Len(cellStart) > 0 And Len(cellEnd) > 0 Then
             With ws.columns(cellStart & ":" & cellEnd)
@@ -291,8 +399,8 @@ End Sub
 Public Sub ApplyDataHDirection(ws As Worksheet, direction As Integer, _
                            Optional cellStart As String = "", Optional cellEnd As String = "")
     If Not ws Is Nothing Then
-        Utils.NormalizeCellStartEnd cellStart, cellEnd
-        Utils.NormalizeDataHDirection direction
+        NormalizeCellStartEnd cellStart, cellEnd
+        NormalizeDataHDirection direction
 
         If Len(cellStart) > 0 And Len(cellEnd) > 0 Then
             With ws.columns(cellStart & ":" & cellEnd)
@@ -312,9 +420,9 @@ Public Sub ApplyCellsValue(ws As Worksheet, value As Variant, _
                            Optional cellRow As Long = 0, Optional cellCol As Long = 0)
     If Not ws Is Nothing Then
         If Len(CStr(value)) > 0 Then
-            Utils.NormalizeCellRowCol cellRow, cellCol
-            Utils.NormalizeDataHDirection cellHDirection
-            Utils.NormalizeDataFormat cellFormat
+            NormalizeCellRowCol cellRow, cellCol
+            NormalizeDataHDirection cellHDirection
+            NormalizeDataFormat cellFormat
 
             If cellRow > 0 And cellCol > 0 Then
                 With ws.Cells(cellRow, cellCol)
@@ -332,9 +440,9 @@ Public Sub ApplyRangeValue(ws As Worksheet, value As Variant, _
                            Optional cellStart As String = "", Optional cellEnd As String = "")
     If Not ws Is Nothing Then
         If Len(CStr(value)) > 0 Then
-            Utils.NormalizeCellStartEnd cellStart, cellEnd
-            Utils.NormalizeDataHDirection cellHDirection
-            Utils.NormalizeDataFormat cellFormat
+            NormalizeCellStartEnd cellStart, cellEnd
+            NormalizeDataHDirection cellHDirection
+            NormalizeDataFormat cellFormat
 
             If Len(cellStart) > 0 And Len(cellEnd) > 0 Then
                 With ws.Range(cellStart & ":" & cellEnd)
@@ -366,8 +474,8 @@ Public Sub ApplySheetInputDataStyle()
     ExcelUtils.ApplyDataFormat ws, GeneralFormat, "P", "P"
     ExcelUtils.ApplyDataFormat ws, NumberFormat, "Q", "R"
     ExcelUtils.ApplyDataHDirection ws, xlRight, "Q", "R"
-    ExcelUtils.ApplyDataFormat ws, ForceStringFormat, "S", "AC"
-    ExcelUtils.ApplyDataHDirection ws, xlLeft, "S", "AC"
+    ExcelUtils.ApplyDataFormat ws, ForceStringFormat, "S", "AG"
+    ExcelUtils.ApplyDataHDirection ws, xlLeft, "S", "AG"
 
     ws.Rows(RowDataBegin - 1).HorizontalAlignment = xlCenter
     ws.Cells.columns.AutoFit
@@ -394,7 +502,16 @@ Public Sub ApplySheetSimpleStyle()
 
     ExcelUtils.ApplyRichFontStyle ws, "A8", "M8", True, False, xlCenter, ColorWhite, ColorGreen, True
 
-    ws.Cells.columns.AutoFit
+    ' 不要autofit，這頁手動畫好了，autofit 會跑版
+    'ws.Cells.columns.AutoFit
+    ' 相反的，把每個欄位都固定寬度
+    For i = 1 To 13 'M, 調查結果
+        If (i >= 1) And (i <= 5) Then
+            ws.columns(i).ColumnWidth = ColShSimpleSmallColW
+        Else
+            ws.columns(i).ColumnWidth = ColShSimpleColWidth
+        End If
+    Next i
 End Sub
 
 ' 3.2金流與交易對手 頁面 style

@@ -2,59 +2,82 @@ Option Explicit
 
 Private Sub Workbook_Open()
 
-    With Worksheets(SheetNameSimple)
-        .cbWindow.AddItem "每日"
-        .cbWindow.AddItem "每3日"
-        .cbWindow.AddItem "每5日"
-        .cbWindow.AddItem "每月"
+    Dim lastRow    As Long
+    Dim wsShInData As Worksheet
+    Dim wsShSimple As Worksheet
+    Dim wsShMoney  As Worksheet
+    Dim wsShLabel  As Worksheet
 
-        .cbOccurrence.AddItem "至少1次"
-        .cbOccurrence.AddItem "至少3次"
-        .cbOccurrence.AddItem "至少5次"
-        .cbOccurrence.AddItem "至少10次"
-        .cbOpponent.AddItem "所有人"
-        .cbOpponent.AddItem "指定帳戶"
-        '.cbOpponent.AddItem "任一帳戶" ' TODO:
+    On Error Resume Next
+    Set wsShInData = Worksheets(SheetNameInputData)
+    Set wsShSimple = Worksheets(SheetNameSimple)
+    Set wsShMoney = Worksheets(SheetNameMoney)
+    Set wsShLabel = Worksheets(SheetNameLabel)
+    On Error GoTo 0
 
+    Dim emptyData As Boolean
+    lastRow = wsShInData.Cells(wsShLabel.Rows.Count, 1).End(xlUp).row
+    If lastRow <= RowDataBegin Then
+        emptyData = True
+    End If
 
-        Dim lastRow As Long
-        Dim ws As Worksheet
-        Dim i As Long
+    If Not wsShSimple Is Nothing Then
+        With Worksheets(SheetNameSimple)
+            Dim arrTW    As Variant
+            Dim arrOccur As Variant
+            Dim arrOppon As Variant
 
-        Set ws = Worksheets(SheetNameLabel)
-        lastRow = ws.Cells(ws.Rows.Count, 1).End(xlUp).row
-        .cbPattern.AddItem "不使用"
-        For i = 2 To lastRow
-            .cbPattern.AddItem ws.Cells(i, 1).value
-        Next i
-    End With
+            arrTW = ExcelUtils.GetUiTWArray()
+            arrOccur = ExcelUtils.GetUiOccurArray()
+            arrOppon = ExcelUtils.GetUiOpponArray()
 
-    Dim pt As PivotTable
-    Dim rowPivot As Long
+            Dim i As Long
+            For i = LBound(arrTW) To UBound(arrTW)
+                .cbWindow.AddItem arrTW(i)
+            Next i
+            For i = LBound(arrOccur) To UBound(arrOccur)
+                .cbOccurrence.AddItem arrOccur(i)
+            Next i
+            For i = LBound(arrOppon) To UBound(arrOppon)
+                .cbOpponent.AddItem arrOppon(i)
+            Next i
 
-    Set ws = ThisWorkbook.Sheets(SheetNameMoney)
+            If Not wsShLabel Is Nothing Then
+                lastRow = wsShLabel.Cells(wsShLabel.Rows.Count, 1).End(xlUp).row
+                .cbPattern.AddItem UiPatternString
 
-    If Not ws Is Nothing Then
+                For i = 2 To lastRow
+                    .cbPattern.AddItem wsShLabel.Cells(i, 1).value
+                Next i
+            End If
+        End With
+    End If
+
+    If (Not wsShMoney Is Nothing) And (emptyData = False) Then
+        Dim pt As PivotTable
+        Dim rowPivot As Long
+
         On Error Resume Next
-        Set pt = ws.PivotTables("MyPivotTable3")
+        Set pt = wsShMoney.PivotTables(PivotTableName03)
         rowPivot = pt.TableRange1.Cells(1, 1).row
-        Set HeaderPivotTable3 = ws.Range("A" & CStr(rowPivot - 1))
+        Set HeaderPivotTable3 = wsShMoney.Range("A" & CStr(rowPivot - 1))
 
-        Set pt = ws.PivotTables("MyPivotTable4")
+        Set pt = wsShMoney.PivotTables(PivotTableName04)
         rowPivot = pt.TableRange1.Cells(1, 1).row
-        Set HeaderPivotTable4 = ws.Range("H" & CStr(rowPivot - 1))
+        Set HeaderPivotTable4 = wsShMoney.Range("H" & CStr(rowPivot - 1))
 
-        Set pt = ws.PivotTables("MyPivotTable5")
+        Set pt = wsShMoney.PivotTables(PivotTableName05)
         rowPivot = pt.TableRange1.Cells(1, 1).row
-        Set HeaderPivotTable5 = ws.Range("A" & CStr(rowPivot - 1))
+        Set HeaderPivotTable5 = wsShMoney.Range("A" & CStr(rowPivot - 1))
 
-        Set pt = ws.PivotTables("MyPivotTable6")
+        Set pt = wsShMoney.PivotTables(PivotTableName06)
         rowPivot = pt.TableRange1.Cells(1, 1).row
-        Set HeaderPivotTable6 = ws.Range("H" & CStr(rowPivot - 1))
-
-
+        Set HeaderPivotTable6 = wsShMoney.Range("H" & CStr(rowPivot - 1))
         On Error GoTo 0
+    End If
 
+    If emptyData = True Then
+        ExcelUtils.ClearSheet SheetNameMoney
     End If
 
     menu.createMenu
@@ -62,11 +85,45 @@ End Sub
 
 Private Sub Workbook_SheetActivate(ByVal Sh As Object)
     If Sh.name = SheetNameSimple Then
+        If Len(MainAccName) <= 0 Then
+            With Worksheets(SheetNameOrginal)
+                MainAccName = .Cells(4, 2).value
+                MainAccId = .Cells(5, 2).value
+            End With
+        End If
+
+        Sh.Range("O1").NumberFormat = ForceStringFormat
         Sh.Range("O1").value = MainAccName
+        Sh.Range("O2").NumberFormat = ForceStringFormat
         Sh.Range("O2").value = MainAccId
+
+        Dim tbCustomerName As Shape
+        Dim tbCustomerAccount As Shape
+        Set tbCustomerName = Sh.Shapes("txtCustomerName")
+        Set tbCustomerAccount = Sh.Shapes("txtCustomerAccount")
+
+        tbCustomerName.DrawingObject.Object.Text = MainAccName
+        tbCustomerAccount.DrawingObject.Object.Text = MainAccId
     End If
 End Sub
 
 Private Sub Workbook_BeforeClose(Cancel As Boolean)
     menu.deleteMenu
+End Sub
+
+' 只要原始資料那頁的內容有改，就會自動執行
+Private Sub Workbook_SheetChange(ByVal Sh As Object, ByVal Target As Range)
+    If Sh.name = SheetNameOrginal Then
+        Application.ErrorCheckingOptions.NumberAsText = False
+        Application.ScreenUpdating = False ' For performance
+        Application.DisplayAlerts = False
+
+        With Worksheets(SheetNameMain)
+            Call .BtnAnalyze_Click
+        End With
+
+        Application.DisplayAlerts = True
+        Application.ScreenUpdating = True ' For performance
+        Application.ErrorCheckingOptions.NumberAsText = True
+    End If
 End Sub

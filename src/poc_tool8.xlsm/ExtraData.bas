@@ -1,10 +1,8 @@
 Attribute VB_Name = "ExtraData"
 Option Explicit
 
-Private isDictInited As Boolean
-
 Sub InitDicts()
-    If isDictInited = True Then
+    If IsDictInited = True Then
         Debug.Print "dict inited before!!"
         Exit Sub
     End If
@@ -14,26 +12,14 @@ Sub InitDicts()
     Set DictVirtualAcc = GetVirtualAcc()
 
     ' disable this to load them every thime
-    'isDictInited = True
-
+    IsDictInited = True
 End Sub
 
-Public Function CheckVAccount(bankID As String, account As String) As String
-    Dim ret         As String
-    Dim tmp         As String
-    Dim b           As Boolean
+Public Function ConvVAccName(bankID As String, account As String) As String
+    Dim ret As String
+    Dim b   As Boolean
 
-    'Debug.Print "Check " & bankID & " " & account
-    ret = ""
-    tmp = ""
-
-    If Len(bankID) = 0 Or Len(account) = 0 Then
-        ret = ""
-
-    ElseIf Not DictVirtualAcc.Exists(bankID) Then
-        ret = ""
-
-    Else
+    If (Len(bankID) > 0) And (Len(account) > 0) And (DictVirtualAcc.Exists(bankID) = True) Then
         Dim key     As Variant
         For Each key In DictVirtualAcc(bankID)
             'Debug.Print "Got key  " & key & " value: " & dictVirtualAcc(bankID)(key)
@@ -45,8 +31,16 @@ Public Function CheckVAccount(bankID As String, account As String) As String
         Next key
     End If
 
-    CheckVAccount = Trim(ret)
+    ConvVAccName = Trim(ret)
+End Function
 
+Public Function IsWarningAcc(account As String) As Boolean
+    Dim isWarn As Boolean
+    If DictBlacklist.Exists(account) = True Then
+        isWarn = True
+    End If
+
+    IsWarningAcc = isWarn
 End Function
 
 Function ContainPrefix(Prefix As String, Text As String) As Boolean
@@ -55,62 +49,72 @@ Function ContainPrefix(Prefix As String, Text As String) As Boolean
 End Function
 
 Private Function GetVirtualAcc() As Object
-    Dim wsRef       As Worksheet
-    Dim dict        As Object
-    Dim lastRow     As Long
-    Dim i           As Long
-    Dim wbRef       As Workbook
-    Dim currentPath As String
-    Dim isOpened    As Boolean
+    Dim wsRef    As Worksheet
+    Dim lastRow  As Long
+    Dim i        As Long
+    Dim wbRef    As Workbook
+    Dim currPath As String
+    Dim isOpened As Boolean
 
     isOpened = True
     ' Get the current working directory
-    currentPath = ThisWorkbook.Path
+    currPath = ThisWorkbook.Path
 
     On Error Resume Next
     Set wbRef = Workbooks(FileVirtualAcc)
-
     On Error GoTo 0
+
     If wbRef Is Nothing Then
         ' Workbook is not open, open it
         isOpened = False
-        Set wbRef = Workbooks.Open(currentPath & "\" & FileVirtualAcc)
-
+        Set wbRef = Workbooks.Open(currPath & "\" & FileVirtualAcc)
     End If
 
     ' Set the reference worksheet
     Set wsRef = wbRef.Sheets(SheetNameVirtualAcc)
 
-    Dim bank        As String
-    Dim strRule     As String
-    Dim prefixRule  As String
-    Dim colKey      As String
-    Dim colVal      As String
-    Dim colUsage    As String
+    Dim bank       As String
+    Dim accN       As String
+    Dim strRule    As String
+    Dim prefixRule As String
+    Dim colKey     As String
+    Dim colVal     As String
+    Dim colAcc     As String
+    Dim colUsage   As String
 
-    colKey = "A"
-    colVal = "B"
-    colUsage = "E"
+    colKey = "A" ' 行庫別 ' bank
+    colVal = "B" ' 帳號
+    colAcc = "C" ' 戶名
+    colUsage = "E" ' 用途: 公司戶、虛擬帳號...
+    ' D: 統編、F: 備註
 
+    ' 這裡必須要用這種創建 dictionary 的方式做，
+    ' 用 As New Scripting.Dictionary 會遇到 "鍵值重複使用的問題"
+    Dim dict As Object
     Set dict = CreateObject("Scripting.Dictionary")
 
     lastRow = wsRef.Cells(wsRef.Rows.Count, colKey).End(xlUp).row
+
     For i = 2 To lastRow
         bank = CStr(wsRef.Cells(i, colKey).value)
+        accN = CStr(wsRef.Cells(i, colAcc).value)
+
         If Not IsEmpty(bank) Then
-            strRule = wsRef.Cells(i, colVal).value & " (" & bank & " " & wsRef.Cells(i, colUsage).value & ")"
+            strRule = wsRef.Cells(i, colVal).value & " (" & bank & " " & wsRef.Cells(i, colUsage).value & ")" & _
+                      GeneralDelimiter & accN
+            prefixRule = Utils.ExtractNumbersPrefix(strRule)
 
-            prefixRule = ExtractNumbersPrefix(strRule)
             If Not dict.Exists(bank) Then
-                Dim nestedDict1 As Object
-                Set nestedDict1 = CreateObject("Scripting.Dictionary")
+                'Dim nestedDict As New Scripting.Dictionary
+                Dim nestedDict As Object
+                Set nestedDict = CreateObject("Scripting.Dictionary")
 
-                nestedDict1.Add prefixRule, strRule
-                dict.Add bank, nestedDict1
+                ' dict.Add key, item
+                nestedDict.Add prefixRule, strRule
+                dict.Add bank, nestedDict
             Else
                 'Debug.Print "in bank " & bank & " add a New rule: " & prefixRule & "    " & strRule
                 dict(bank).Add prefixRule, strRule
-
             End If
         End If
     Next i
@@ -120,7 +124,6 @@ Private Function GetVirtualAcc() As Object
     End If
 
     Set GetVirtualAcc = dict
-
 End Function
 
 Private Function GetBlacklist() As Object
@@ -182,25 +185,4 @@ Public Function GetKVPairsToDict(wsRef As Worksheet, colKey As String, colVal As
     ' You can use the dictionary as needed
     Set GetKVPairsToDict = dict
 
-End Function
-
-Function ExtractNumbersPrefix(inputString As String) As String
-    Dim i           As Integer
-    Dim result      As String
-
-    ' Loop through each character in the input string
-    For i = 1 To Len(inputString)
-        ' Check if the character is a number
-        If IsNumeric(Mid(inputString, i, 1)) Then
-            ' Append the numeric character to the result
-            result = result & Mid(inputString, i, 1)
-        Else
-
-            Exit For
-
-        End If
-    Next i
-
-    ' Return the result containing numbers only
-    ExtractNumbersPrefix = result
 End Function

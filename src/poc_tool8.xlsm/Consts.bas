@@ -17,6 +17,7 @@ Public Const AnalyBtnFontSize  As Integer = 24
 Public Const DateFormat        As String = "yyyy/mm/dd"
 Public Const TimeFormat        As String = "hh:mm:ss"
 Public Const NumberFormat      As String = "_(* #,##0.00_);_(* (#,##0.00);_(* "" - ""??_);_(@_)"
+Public Const MoneyFormat       As String = "$#,##0.00;-$#,##0.00"
 Public Const GeneralFormat     As String = "General"
 Public Const ForceStringFormat As String = "@"
 
@@ -39,6 +40,7 @@ Public Const ColorBlue      As Long = &HAD5236
 Public Const ColorOrange    As Long = &HB60B0
 Public Const ColorBlack     As Long = &H0
 Public Const ColorGreen     As Long = &H7C7C00 'RGB(0, 124, 124)
+Public Const ColorGreen2    As Long = &H99BC85 'RGB(153, 188, 133)
 Public Const ColorYellow2   As Long = &H86FFFE
 
 ' 主要的 Sheet 名字
@@ -85,15 +87,15 @@ Public Const SelfServiceID   As String = "0880"      ' 您幫幫您
 Public Const SelfServiceID_2 As String = "880"       ' 您幫幫您
 
 Public Const BtnStatusCleanData   As String = "清除前次分析資料"
-Public Const BtnStatusStartRun    As String = "開始分析"
-Public Const BtnStatusStopRun     As String = "完成分析"
+Public Const BtnStatusStartRun    As String = "分析交易明細資料中" ' "開始分析"
+Public Const BtnStatusStopRun     As String = "" ' "完成分析"
 Public Const BtnStatusApplySimple As String = "準備交易明細資料"
 Public Const BtnStatusStartRebase As String = "開始整理"
 Public Const BtnStatusStopRebase  As String = "整理完畢"
 
 ' =========================================================
 ' Sheet 2.1 主頁面 所使用的常數
-Public Const RowShMainContentRange As String = "F2:F30"
+Public Const RowShMainContentRange As String = "F3" '"F2:F30"
 
 ' =========================================================
 ' Sheet 2.2 清整後資料 所使用的常數
@@ -125,26 +127,34 @@ Public Const ColShInDataBranchCity As Integer = 25       ' 分行縣市
 Public Const ColShInDataBranchArea As Integer = 26       ' 分行區域
 Public Const ColShInDataTSLoc      As Integer = 27       ' 交易地點
 Public Const ColShInDataTSChannel  As Integer = 28       ' 交易通路
-Public Const ColShInDataTSOClock   As Integer = 29       ' 簡易交易時間
+Public Const ColShInDataTSOClock   As Integer = 29       ' 簡易交易時間, AC, 29
+Public Const ColShInDataVAccCName  As Integer = 30       ' 照會帳戶, 虛擬帳號對應公司名, AD, 30
+Public Const ColShInDataVAccReason As Integer = 31       ' 標誌虛擬原因, AE, 31
+Public Const ColShInDataWAccCName  As Integer = 32       ' 警示帳戶, AF, 32
+Public Const ColShInDataPAccCName  As Integer = 33       ' 樞紐顯示帳戶, AG, 32
 
-Public Const ColShInDataAmountName     As String = "Amt"        ' H, 8, ColShInDataAmount
-Public Const ColShInDataAccountName    As String = "轉出入帳號"     ' J, 10, ColShInDataAccount 
-Public Const ColShInDataTSMonthName    As String = "交易月份"      ' O, 15, ColShInDataTSMonth
-Public Const ColShInDataTSSummaryName  As String = "交易摘要"       ' P, 16, ColShInDataTSSummary
-Public Const ColShInDataBankCodeName   As String = "銀行代碼"       ' S, 19, ColShInDataBankCode
-Public Const ColShInDataTSTypeName     As String = "TranType"       ' T, 20, ColShInDataTSType
-Public Const ColShInDataATMLocName     As String = "ATM地點"        ' U, 21, ColShInDataATMLoc
-Public Const ColShInDataATMCityName    As String = "ATM縣市"        ' V, 22, ColShInDataATMCity
-Public Const ColShInDataATMAreaName    As String = "ATM區域"        ' W, 23, ColShInDataATMArea
-Public Const ColShInDataBrShowName     As String = "分行名"         ' X, 24, ColShInDataBranchName
-Public Const ColShInDataBranchCityName As String = "分行縣市"       ' Y, 25, ColShInDataBranchCity
-Public Const ColShInDataBranchAreaName As String = "分行區域"       ' Z, 26, ColShInDataBranchArea
-Public Const ColShInDataTSLocName      As String = "交易地點"       ' AA, 27, ColShInDataTSLoc
-Public Const ColShInDataTSChName       As String = "交易通路"       ' AB, 28, ColShInDataTSChannel
-Public Const ColShInDataTSOClockName   As String = "簡化交易時間"   ' AC, 29, ColShInDataTSOClock
+Public Const ColShInDataAmountName     As String = "Amt" ' H, 8, ColShInDataAmount
+Public Const ColShInDataAccountName    As String = "轉出入帳號" ' J, 10, ColShInDataAccount
+Public Const ColShInDataTSMonthName    As String = "交易月份" ' O, 15, ColShInDataTSMonth
+Public Const ColShInDataTSSummaryName  As String = "交易摘要" ' P, 16, ColShInDataTSSummary
+Public Const ColShInDataBankCodeName   As String = "銀行代碼" ' S, 19, ColShInDataBankCode
+Public Const ColShInDataTSTypeName     As String = "TranType" ' T, 20, ColShInDataTSType
+Public Const ColShInDataATMLocName     As String = "ATM地點" ' U, 21, ColShInDataATMLoc
+Public Const ColShInDataATMCityName    As String = "ATM縣市" ' V, 22, ColShInDataATMCity
+Public Const ColShInDataATMAreaName    As String = "ATM區域" ' W, 23, ColShInDataATMArea
+Public Const ColShInDataBrShowName     As String = "分行名" ' X, 24, ColShInDataBranchName
+Public Const ColShInDataBranchCityName As String = "分行縣市" ' Y, 25, ColShInDataBranchCity
+Public Const ColShInDataBranchAreaName As String = "分行區域" ' Z, 26, ColShInDataBranchArea
+Public Const ColShInDataTSLocName      As String = "交易地點" ' AA, 27, ColShInDataTSLoc
+Public Const ColShInDataTSChName       As String = "交易通路" ' AB, 28, ColShInDataTSChannel
+Public Const ColShInDataTSOClockName   As String = "簡化交易時間" ' AC, 29, ColShInDataTSOClock
+Public Const ColShInDataVAccCShowName  As String = "照會帳戶" ' AD, 30, ColShInDataVAccCName
+Public Const ColShInDataVAccReasonName As String = "照會原因" ' AE, 31, ColShInDataVAccReason
+Public Const ColShInDataWAccCShowName  As String = "警示帳戶" ' AF, 32, ColShInDataWAccCName
+Public Const ColShInDataPAccCShowName  As String = "樞紐顯示帳戶" ' AG, 33, ColShInDataPAccCName
 
 Public Const RowShInDataEmpty       As String = "1:7"
-Public Const ColShInDataRangePrefix As String = "A8:AC"
+Public Const ColShInDataRangePrefix As String = "A8:AG" '"A8:AD"
 
 Public Const ColShInDataBeginRange    As String = "A1"
 Public Const ColShInDataCustomerRange As String = "A4"
@@ -167,16 +177,30 @@ Public Const ColShInDataChATMPostfix As String = "網路或ATM"
 Public Const RowShSimpleEmpty       As String = RowShInDataEmpty
 Public Const RowShSimpleNotEmpty    As String = "7:1048576"
 
-' 顯示警告原因的直欄號碼
-Public Const ColShSimpleAlertReason As String = "K"             ' 顏色標註理由
-Public Const ColShSimpleTSTime      As String = "C"             ' 交易時間
-Public Const ColShSimpleTSDate      As String = "A"             ' 交易日期
-Public Const ColShSimpleTSOut       As String = "D"             ' 支出
-Public Const ColShSimpleTSIn        As String = "E"             ' 收入
-Public Const ColShSimpleTSInOutAcc  As String = "G"             ' 轉出入帳號
+Public Const ColShSimpleSmallColW As Long = 13
+Public Const ColShSimpleColWidth  As Long = 15
 
+Public Const ColShSimpleTSDate      As String = "A"             ' 交易日期
+Public Const ColShSimpleTSSummary   As String = "B"             ' 交易摘要
+Public Const ColShSimpleTSTime      As String = "C"             ' 交易時間
+Public Const ColShSimpleTSOut       As String = "D"             ' 支出, Out
+Public Const ColShSimpleTSIn        As String = "E"             ' 收入, In
+Public Const ColShSimpleBalance     As String = "F"             ' 餘額
+Public Const ColShSimpleTSInOutAcc  As String = "G"             ' 轉出入帳號
+Public Const ColShSimpleNote        As String = "H"             ' 備註
+Public Const ColShSimpleChannel     As String = "I"             ' 註記
+Public Const ColShSimpleTSLoc       As String = "J"             ' 交易地點
+Public Const ColShSimpleAlertReason As String = "K"             ' 顏色標註理由 ' 顯示警告原因的直欄號碼
+
+Public Const ColShSimpleLastCol     As String = ColShSimpleAlertReason
+
+Public Const ColShSimpleBalance1K   As Double = 1000            ' 1000元
 Public Const ColShSimpleTSOut100K   As Double = 100000          ' 10萬元
+Public Const ColShSimpleTSOut450K   As Double = 450000          ' 45萬元
 Public Const ColShSimpleTSOut500K   As Double = 500000          ' 50萬元
+Public Const ColShSimpleTSIn100K    As Double = ColShSimpleTSOut100K          ' 10萬元
+Public Const ColShSimpleTSIn450K    As Double = ColShSimpleTSOut450K          ' 45萬元
+Public Const ColShSimpleTSIn500K    As Double = ColShSimpleTSOut500K          ' 50萬元
 
 Public Const ColShSimpleAlertRange  As String = ColShSimpleAlertReason & "8"
 Public Const ColShSimpleAlertName   As String = "顏色標註理由"
@@ -185,8 +209,11 @@ Public Const ColShSimpleRepName     As String = "表徵"
 Public Const ColShSimpleResRange    As String = "M8"
 Public Const ColShSimpleResName     As String = "調查結果"
 
-Public Const ColShSimpleTempTSCh As String = "Y"                ' 交易通路
-Public Const ColShSimpleTempCode As String = "Z"                ' 銀行代碼
+Public Const ColShSimpleTempTSCh       As String = "Y"                ' 交易通路
+Public Const ColShSimpleTempCode       As String = "Z"                ' 銀行代碼
+Public Const ColShSimpleTempVAccName   As String = "AA"               ' 照會戶名
+Public Const ColShSimpleTempVAccReason As String = "AB"               ' 照會原因
+Public Const ColShSimpleTempWAccName   As String = "AC"               ' 警示帳戶
 
 ' 各式警告原因
 Public Const ReasonCloseTo50w    As String = "金額接近 50 萬"
@@ -196,18 +223,48 @@ Public Const ReasonTSInMorning   As String = "凌晨交易"
 Public Const ReasonTSLargeAmount As String = "大額進出"
 Public Const ReasonDWLAlert      As String = "往來警示帳戶"
 
+' 上方選項的字串
+Public Const UiSpecifiedAcc     As String = "指定帳戶"
+Public Const UiForAllAcc        As String = "所有人"
+Public Const UiDisableSearch    As String = "不使用"
+Public Const UiTimeWindow1D     As String = "每日"
+Public Const UiTimeWindow3D     As String = "每3日"
+Public Const UiTimeWindow5D     As String = "每5日"
+Public Const UiTimeWindow1M     As String = "每月"
+Public Const UiOccur1Time       As String = "至少1次"
+Public Const UiOccur3Time       As String = "至少3次"
+Public Const UiOccur5Time       As String = "至少5次"
+Public Const UiOccur10Time      As String = "至少10次"
+
+Public Const UiTimeUnitHour  As String = "時"
+Public Const UiTimeUnitDay   As String = "日"
+Public Const UiTimeUnitMonth As String = "月"
+
+Public Const UiTimeWindowString As String = UiTimeWindow1D & "," & UiTimeWindow3D & "," & UiTimeWindow5D & "," & UiTimeWindow1M
+Public Const UiOccurrenceString As String = UiOccur1Time & "," & UiOccur3Time & "," & UiOccur5Time & "," & UiOccur10Time
+Public Const UiOpponentString   As String = UiForAllAcc & "," & UiSpecifiedAcc
+Public Const UiPatternString    As String = UiDisableSearch
+
+Public Const UiCondiChBranch As String = ColShInDataChBRPostfix
+Public Const UiCondiChwireTS As String = ColShInDataChWTPostfix
+Public Const UiCondiChATMAuto As String = "ATM自動化設備"
+Public Const UiCondiChBrDevices As String = "跨行機台"
+Public Const UiCondiChMobile As String = "行動網"
+Public Const UiCondiChOnline As String = "網銀"
+Public Const UiCondiMatched  As String = "符合條件"
+
 ' =========================================================
 ' Sheet 3.2 交易對手
 Public Const PivotTableRowStart As Long = 3
 Public Const PivotTableGap      As Long = 6
-Public Const PivotTableCutShow  As Long = 8
+Public Const PivotTableCutShow  As Long = 13
 
-Public Const PivotTableName01   As String = "MyPivotTable1"  ' 存入交易 
+Public Const PivotTableName01   As String = "MyPivotTable1"  ' 存入交易
 Public Const PivotTableName02   As String = "MyPivotTable2"  ' 支出交易
-Public Const PivotTableName03   As String = "MyPivotTable3"  ' 轉帳存入交易By總流量 
-Public Const PivotTableName04   As String = "MyPivotTable4"  ' 轉帳支出交易By總流量 
+Public Const PivotTableName03   As String = "MyPivotTable3"  ' 轉帳存入交易By總流量
+Public Const PivotTableName04   As String = "MyPivotTable4"  ' 轉帳支出交易By總流量
 Public Const PivotTableName05   As String = "MyPivotTable5"  ' 跨行轉帳存入交易By總流量
-Public Const PivotTableName06   As String = "MyPivotTable6"  ' 跨行轉帳支出交易By總流量 
+Public Const PivotTableName06   As String = "MyPivotTable6"  ' 跨行轉帳支出交易By總流量
 Public Const PivotTableName07   As String = "MyPivotTable7"  ' ATM存入交易時間
 Public Const PivotTableName08   As String = "MyPivotTable8"  ' ATM存入交易地點
 Public Const PivotTableName09   As String = "MyPivotTable9"  ' ATM領出交易時間
@@ -236,6 +293,7 @@ Public Const ColShMoneyATMDepositTimeName   As String = "ATM存入交易時間"
 Public Const ColShMoneyATMWithdrawTimeName  As String = "ATM領出交易時間"
 Public Const ColShMoneyATMDepositLocName    As String = "ATM存入交易地點"
 Public Const ColShMoneyATMWithdrawLocName   As String = "ATM領出交易地點"
+Public Const ColShMoneyPivotAccountName     AS String = ColShInDataPAccCShowName
 
 Public Const ColShMoneyCountInName   As String = "計數 - In"
 Public Const ColShMoneyCountOutName  As String = "計數 - Out"
@@ -276,8 +334,8 @@ Public Const RowTask23TotalAmountRange  As String = "Q3:X5"
 ' 任務4, 當日現金提領_臨櫃 (臨櫃提款)
 Public Const RowTask4WithdrawOverCounterXAxis As Integer = 10   ' 紀載在第 10 列
 Public Const RowTask4WithdrawOverCounterYAxis As Integer = 11   ' 紀載在第 11 列
-Public Const RowTask4WithdrawAmountLBSusAmt   As Double = 450000
-Public Const RowTask4WithdrawAmountUBSusAmt   As Double = 500000
+Public Const RowTask4WithdrawAmountLBSusAmt   As Double = ColShSimpleTSOut450K
+Public Const RowTask4WithdrawAmountUBSusAmt   As Double = ColShSimpleTSOut500K
 
 ' 任務5, 當日現金提領_臨櫃 (提款總額)
 Public Const RowTask5WithdrawAmountXAxis  As Integer = 13       ' 紀載在第 13 列
@@ -335,7 +393,7 @@ Public Const RowTask11BalanceYAxis  As Integer = 28             ' 紀載在第 28 列
 Public Const RowTask11BalanceTitle  As String = "日期"
 Public Const RowTask11BalanceYLabel As String = "餘額"
 Public Const RowTask11BalanceRange  As String = "H17:X17"
-Public Const RowTask11BalanceUBCnt  As Integer = 1000
+Public Const RowTask11BalanceUBCnt  As Integer = ColShSimpleBalance1K
 
 ' 任務12, 當日轉帳金額
 Public Const RowTask12SmallTransferXAxis   As Integer = 30      ' 紀載在第 30 列
@@ -389,8 +447,9 @@ Public Const ColTSSummaryValOt   As String = "其他交易"
 
 Public Const ColATMValOt As String = "他行ATM"
 
-Public Const ColSummaryHandleFee As String = "手續費"
-Public Const ColSummaryInterest  As String = "利息"
+' item 19, 2024/3/27, 保留手續費與利息後，以下暫時不會用到。
+'Public Const ColSummaryHandleFee As String = "手續費"
+'Public Const ColSummaryInterest  As String = "利息"
 
 Public Const ATMChannelString  As String = "存款機,ＡＴＭ,ATM"
 Public Const XMLChannelString  As String = "XML,ＸＭＬ,XML"
@@ -402,15 +461,17 @@ Public Const EarlyMorningEnd   As String = "4:00:00"
 
 Public Const HintDoubleClick As String = "雙擊左邊儲存格可改排序規則"
 
-Public Const ColNoteChValMobile   As String = "行動網"
-Public Const ColNoteChValOnline   As String = "網銀"
+Public Const GeneralDelimiter As String = "XX9527XX"
+
+Public Const ColNoteChValMobile   As String = UiCondiChMobile
+Public Const ColNoteChValOnline   As String = UiCondiChOnline
 Public Const ColNoteChValPayment  As String = "收付網"
 Public Const ColNoteChValSecurity As String = "證券款"
 Public Const ColNoteChValFax      As String = "傳真銀"
 Public Const ColNoteChValFEDI     As String = "FEDI"
 Public Const ColNoteChValTAX      As String = "繳稅"
 Public Const ColNoteChValIPASS    As String = "一卡通"
-Public Const ColNoteChValCrossBR  As String = "跨行機台"
+Public Const ColNoteChValCrossBR  As String = UiCondiChBrDevices
 
 Public Const ColClerkChVal01 As String = "99998"
 Public Const ColClerkChVal02 As String = "99997"

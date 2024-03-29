@@ -1,4 +1,6 @@
-
+' =================================================
+' Sheet page 3.2金流與交易對手
+' =================================================
 
 Private Sub Worksheet_BeforeDoubleClick(ByVal Target As Range, Cancel As Boolean)
 
@@ -85,7 +87,7 @@ End Sub
 Private Sub Worksheet_PivotTableUpdate(ByVal Target As PivotTable)
     Exit Sub ' FIXME: to let user change filtering option. Need to reserve enough space for pivot table
 
-    If Target.name = PivotTableName03 Or Target.name = PivotTableName04 Or _ 
+    If Target.name = PivotTableName03 Or Target.name = PivotTableName04 Or _
        Target.name = PivotTableName05 Or Target.name = PivotTableName06 Then
         On Error Resume Next
         Set pivotRange = Target.TableRange1

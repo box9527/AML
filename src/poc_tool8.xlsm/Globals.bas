@@ -3,6 +3,7 @@ Option Explicit
 
 Public UpdateSimplePage As Boolean
 
+Public IsDictInited As Boolean
 Public DictBlacklist  As Object
 Public DictVirtualAcc As Object
 

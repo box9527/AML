@@ -180,14 +180,14 @@ Private Sub Refresh_Click_Int(blShowOk As Boolean)
 End Sub
 
 Private Sub CheckOneByOne(ByVal ws As Worksheet)
-    Dim i           As Long
-    Dim lastRow     As Long
-    Dim cellTime    As Double
-    Dim strTmp      As String
-    Dim strAccount  As String
-    Dim enableBalance As Boolean
-    Dim enableTxnTime As Boolean
-    Dim enableLarge   As Boolean
+    Dim i               As Long
+    Dim lastRow         As Long
+    Dim cellTime        As Double
+    Dim strTmp          As String
+    Dim strAccount      As String
+    Dim enableBalance   As Boolean
+    Dim enableTxnTime   As Boolean
+    Dim enableLarge     As Boolean
     Dim enableNearLarge As Boolean
     Dim strReason       As String
 
@@ -198,7 +198,7 @@ Private Sub CheckOneByOne(ByVal ws As Worksheet)
 
     lastRow = ws.Cells(ws.Rows.Count, ColShSimpleTSTime).End(xlUp).row
 
-    For i = RowDataBegin To lastRow
+    For i = RowShSimpleDataBegin To lastRow
         ' Check balance
         If enableBalance = True Then
             If VarType(ws.Cells(i, ColShSimpleBalance).value) = vbDouble Then
@@ -395,9 +395,9 @@ Private Sub TraverseRowsByTimeWindow(ByVal ws As Worksheet)
     Set dictMarkWith = CreateObject("Scripting.Dictionary")
 
     ' Loop through the rows
-    nextStart = ws.Cells(RowDataBegin, ColShSimpleTSDate).MergeArea.Cells(1, 1).value + ws.Cells(RowDataBegin, ColShSimpleTSTime).value
-    nextRowStart = RowDataBegin
-    i = RowDataBegin
+    nextStart = ws.Cells(RowShSimpleDataBegin, ColShSimpleTSDate).MergeArea.Cells(1, 1).value + ws.Cells(RowShSimpleDataBegin, ColShSimpleTSTime).value
+    nextRowStart = RowShSimpleDataBegin
+    i = RowShSimpleDataBegin
     While i <= lastRow
         ' Get the current date and time; Fetch the real row
         currTime = ws.Cells(i, ColShSimpleTSDate).MergeArea.Cells(1, 1).value + ws.Cells(i, ColShSimpleTSTime).value
@@ -687,16 +687,16 @@ Private Sub ResetPage(ByVal ws As Worksheet)
         End If
     Next cell
 
-    ws.Rows(RowHeaderBegin).Font.color = ColorWhite
+    ws.Rows(RowShSimpleHeaderBegin).Font.color = ColorWhite
 
     ' 重置每行背景色
     Dim lastRow     As Long
     Dim i           As Long
     lastRow = ws.Cells(ws.Rows.Count, ColShSimpleTSTime).End(xlUp).row
 
-    For i = RowDataBegin To lastRow
+    For i = RowShSimpleDataBegin To lastRow
         ' set background color
-        If (i - RowDataBegin) Mod 2 = 0 Then
+        If (i - RowShSimpleDataBegin) Mod 2 = 0 Then
             ws.Range(ws.Cells(i, "B"), ws.Cells(i, "K")).Interior.color = ColorYellow
         Else
             ws.Range(ws.Cells(i, "B"), ws.Cells(i, "K")).Interior.color = ColorWhite
@@ -760,27 +760,36 @@ End Sub
 Private Sub Worksheet_Activate()
     gLabelCur = Range(cbLabel).value
 
-    If UpdateSimplePage = False Then
-        UpdateSimplePage = True ' lock
-        Dim blScreenUpdating As Boolean
-        blScreenUpdating = Application.ScreenUpdating
-        If blScreenUpdating = True Then
-            ' Fix flash issue when switching to this page at the beginning
-            Application.ScreenUpdating = False
+    On Error Resume Next
+    Dim wsShOrg    As Worksheet
+    Dim wsShSimple As Worksheet
+    Set wsShOrg = Worksheets(SheetNameOrginal)
+    Set wsShSimple = Worksheets(SheetNameSimple)
+    On Error GoTo 0
+
+    ' 避免 template poc_tool8.xlsm 打開就會發生錯誤
+    If Not wsShOrg Is Nothing Then
+        Dim lastRow As Long
+        lastRow = ExcelUtils.GetLastRowNumber(wsShSimple)
+
+        If UpdateSimplePage = False Then
+            UpdateSimplePage = True ' lock
+            Dim blScreenUpdating As Boolean
+            blScreenUpdating = Application.ScreenUpdating
+            If blScreenUpdating = True Then
+                ' Fix flash issue when switching to this page at the beginning
+                Application.ScreenUpdating = False
+            End If
+
+            Refresh_Click_Int False
+
+            Application.ScreenUpdating = blScreenUpdating ' restore value
+
+            UpdateSimplePage = False ' Unlock
         End If
 
-        Refresh_Click_Int False
-
-        Application.ScreenUpdating = blScreenUpdating ' restore value
-
-        UpdateSimplePage = False ' Unlock
-    End If
-
-    Dim ws   As Worksheet
-    Dim lastRow As Long
-    Set ws = ThisWorkbook.Sheets(SheetNameSimple)
-    lastRow = ExcelUtils.GetLastRowNumber(ws)
-    If lastRow >= RowDataBegin Then
-        ExcelUtils.ApplySheetSimpleStyle
+        If lastRow >= RowShSimpleDataBegin Then
+            ExcelUtils.ApplySheetSimpleStyle
+        End If
     End If
 End Sub

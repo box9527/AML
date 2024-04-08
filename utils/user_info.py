@@ -26,8 +26,9 @@ def get_user_info(cash_flow: str='') -> dict:
     Good performance by comparing with pdfminer.high_level
     '''
     import fitz # install using: pip install PyMuPDF
-    info = {"客戶": "", "產品別": "", "查詢起日": "", "帳號": "",
-            "幣別": "", "查詢迄日": "", "交易內容": ""}
+    info = {"戶名": "", "產品別": "", "查詢起日": "", "帳號": "",
+            "幣別": "", "查詢迄日": "", "交易內容": "",
+            "列印日期":"", "櫃員代號":""}
     # 2, 11, 9, 12, 8, 10, 16
     try:
         with fitz.open(cash_flow) as doc:
@@ -44,20 +45,22 @@ def get_user_info(cash_flow: str='') -> dict:
 
             if len(texts) > 0:
                 cinfo = texts[0].split('\n')
-                info["客戶"] = str(cinfo[2]).strip()
+                info["戶名"] = str(cinfo[2]).strip()
                 info["產品別"] = str(cinfo[11].split('產品別：')[1]).strip()
                 info["查詢起日"] = str(cinfo[9].split('查詢起日：')[1]).strip()
                 info["帳號"] = str(cinfo[12]).strip()
                 info["幣別"] = str(cinfo[8].split('幣別：')[1]).strip()
                 info["查詢迄日"] = str(cinfo[10].split('查詢迄日：')[1]).strip()
                 info["交易內容"] = str(cinfo[16]).strip()
+                info["列印日期"] = str(cinfo[14]).strip()
+                info["櫃員代號"] = str(cinfo[15]).strip()
 
     except Exception as e:
         logger.warning(f"Cannot retrieve user information.")
         logger.debug(f"{e}")
         pass
 
-    if len(info["客戶"]) <= 0:
+    if len(info["戶名"]) <= 0:
         logger.warning(f"Cannot retrieve user information.")
 
     return info

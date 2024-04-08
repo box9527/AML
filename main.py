@@ -7,6 +7,7 @@ import os
 import glob
 import time
 import tkinter as tk
+import logging
 from loguru import logger
 import shutil
 from utils.toolkit import (
@@ -17,6 +18,7 @@ from gui import GUIApp
 
 
 def run():
+    logging.basicConfig(level=logging.DEBUG)
     start_time = time.time()
     root = tk.Tk()
     gui_app = GUIApp(root)

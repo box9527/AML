@@ -55,7 +55,7 @@ Public Const SheetNameIntermediate As String = "暫存區"             ' 隱藏
 Public Const SheetNameLabel        As String = "自訂標示設定"        ' 隱藏
 
 ' 原始資料從第幾行開始才是真的資料
-Public Const RowDataBegin As Long = 9
+Public Const RowDataBegin As Long = 7 ' 20240403, 配合3RC從 9 改為 7
 Public Const RowHeaderBegin As Long = (RowDataBegin - 1)
 
 ' =========================================================
@@ -67,15 +67,17 @@ Public Const ColShOrgTSTime     As Integer = 4       ' 交易時間
 Public Const ColShOrgBranchID   As Integer = 5       ' 交易分行
 Public Const ColShOrgTSTeller   As Integer = 6       ' 交易櫃員
 Public Const ColShOrgSummary    As Integer = 7       ' 摘要
-Public Const ColShOrgAmtDraw    As Integer = 8       ' Out
-Public Const ColShOrgAmtDeposit As Integer = 9       ' In
+Public Const ColShOrgAmtDraw    As Integer = 8       ' Out ' 20240403 配合3RC改為 支出
+Public Const ColShOrgAmtDeposit As Integer = 9       ' In  ' 20240403 配合3RC改為 存入
 Public Const ColShOrgBalance    As Integer = 10      ' 餘額
-Public Const ColShOrgAccount    As Integer = 11      ' 轉出入帳號
-Public Const ColShOrgMemberID   As Integer = 12      ' 合作機構/會員編號
-Public Const ColShOrgSerialCode As Integer = 13      ' 金資序號
-Public Const ColShOrgTicketCode As Integer = 14      ' 票號
-Public Const ColShOrgNote       As Integer = 15      ' 備註
-Public Const ColShOrgChannel    As Integer = 16      ' 註記
+Public Const ColShOrgBankCat    As Integer = 11      ' 行庫別，20240403 配合3RC多出的Column
+Public Const ColShOrgAccount    As Integer = 12      ' 轉出入帳號
+Public Const ColShOrgMemberID   As Integer = 13      ' 合作機構/會員編號
+Public Const ColShOrgSerialCode As Integer = 14      ' 金資序號
+Public Const ColShOrgMachNumber As Integer = 15      ' 機台號碼，20240403 配合3RC多出的Column
+Public Const ColShOrgTicketCode As Integer = 16      ' 票號
+Public Const ColShOrgNote       As Integer = 17      ' 備註
+Public Const ColShOrgChannel    As Integer = 18      ' 註記
 
 ' 假設原始資料最多的 Column 數目就是最多 60 欄
 Public Const MaxSrcCol         As Long = 60
@@ -153,18 +155,37 @@ Public Const ColShInDataVAccReasonName As String = "照會原因" ' AE, 31, ColShInD
 Public Const ColShInDataWAccCShowName  As String = "警示帳戶" ' AF, 32, ColShInDataWAccCName
 Public Const ColShInDataPAccCShowName  As String = "樞紐顯示帳戶" ' AG, 33, ColShInDataPAccCName
 
-Public Const RowShInDataEmpty       As String = "1:7"
-Public Const ColShInDataRangePrefix As String = "A8:AG" '"A8:AD"
+Public Const RowShInDataEmpty       As String = "1:5" ' 20240403 配合3RC 修改 1:7 到 1:5
+Public Const ColShInDataRangePrefix As String = "A6:AG" '"A8:AD" ' 20240403 配合3RC 修改 A8:AG 到 A6:AG
 
-Public Const ColShInDataBeginRange    As String = "A1"
-Public Const ColShInDataCustomerRange As String = "A4"
-Public Const ColShInDataCustNameRange As String = "B4"
-Public Const ColShInDataAccRange      As String = "A5"
-Public Const ColShInDataAccIDRange    As String = "B5"
+Public Const ColShInDataBeginRange      As String = "A1"
+Public Const ColShInDataCustomerRange   As String = "A4"
+Public Const ColShInDataCustNameRange   As String = "B4"
+Public Const ColShInDataAccRange        As String = "A5"
+Public Const ColShInDataAccIDRange      As String = "B5"
+Public Const ColShInDataProdRange       As String = "F5"
+Public Const ColShInDataProdCateRange   As String = "G5"
+Public Const ColShInDataCurrRange       As String = "J5"
+Public Const ColShInDataCurrTypeRange   As String = "K5"
+Public Const ColShInDataPrintRange      As String = "N4"
+Public Const ColShInDataPrintDateRange  As String = "O4"
+Public Const ColShInDataQStartRange     As String = "N5"
+Public Const ColShInDataQStartDateRange As String = "O5"
+Public Const ColShInDataTellerRange     As String = "Q4"
+Public Const ColShInDataTellerCodeRange As String = "R4"
+Public Const ColShInDataQEndRange       As String = "Q5"
+Public Const ColShInDataQEndDateRange   As String = "R5"
+Public Const ColShInDataTSCateRange     As String = "I2"
 
-Public Const ColShInDataCustomerRegex As String = "客戶"
+Public Const ColShInDataCustomerRegex As String = "戶名"
 Public Const ColShInDataAccRegex      As String = "帳號"
 Public Const ColShInDataTSDateRegex   As String = "交易日期"
+Public Const ColShInDataProdRegex     As String = "產品別"
+Public Const ColShInDataCurrRegex     As String = "幣別"
+Public Const ColShInDataPrintRegex    As String = "列印日期"
+Public Const ColShInDataQStartRegex   As String = "查詢起日"
+Public Const ColShInDataTellerRegex   As String = "櫃員代號"
+Public Const ColShInDataQEndRegex     As String = "查詢迄日"
 
 Public Const ColShInDataChSAPostfix  As String = "系統自動"
 Public Const ColShInDataChBRPostfix  As String = "臨櫃分行"
@@ -174,7 +195,10 @@ Public Const ColShInDataChATMPostfix As String = "網路或ATM"
 
 ' =========================================================
 ' Sheet 3.1 交易明細 所使用的常數
-Public Const RowShSimpleEmpty       As String = RowShInDataEmpty
+Public Const RowShSimpleDataBegin   As Long = 9
+Public Const RowShSimpleHeaderBegin As Long = (RowShSimpleDataBegin - 1)
+Public Const RowShInDataSimpleGaps  As Long = RowShSimpleDataBegin - RowDataBegin
+Public Const RowShSimpleEmpty       As String = "1:7"
 Public Const RowShSimpleNotEmpty    As String = "7:1048576"
 
 Public Const ColShSimpleSmallColW As Long = 13
@@ -281,8 +305,8 @@ Public Const ColShMoneyTSSummaryName        As String = ColShInDataTSSummaryName
 Public Const ColShMoneyAccountName          AS String = ColShInDataAccountName
 Public Const ColShMoneyATMCityName          As String = ColShInDataATMCityName
 Public Const ColShMoneyTSOClockName         As String = ColShInDataTSOClockName
-Public Const ColShMoneyDepositName          As String = "In"
-Public Const ColShMoneyWithdrawName         As String = "Out"
+Public Const ColShMoneyDepositName          As String = "存入" ' "In"
+Public Const ColShMoneyWithdrawName         As String = "支出" ' "Out"
 Public Const ColShMoneyTSDepositName        As String = "存入交易"
 Public Const ColShMoneyTSWithdrawName       As String = "支出交易"
 Public Const ColShMoneyTSInByTrafficName    As String = "轉帳存入交易By總流量"
@@ -295,12 +319,12 @@ Public Const ColShMoneyATMDepositLocName    As String = "ATM存入交易地點"
 Public Const ColShMoneyATMWithdrawLocName   As String = "ATM領出交易地點"
 Public Const ColShMoneyPivotAccountName     AS String = ColShInDataPAccCShowName
 
-Public Const ColShMoneyCountInName   As String = "計數 - In"
-Public Const ColShMoneyCountOutName  As String = "計數 - Out"
-Public Const ColShMoneySumIn2Name    As String = "加總 - In2"
-Public Const ColShMoneySumOut2Name   As String = "加總 - Out2"
-Public Const ColShMoneyRatioIn3Name  As String = "佔比 - In3"
-Public Const ColShMoneyRatioOut3Name As String = "佔比 - Out3"
+Public Const ColShMoneyCountInName   As String = "計數 - 存入"
+Public Const ColShMoneyCountOutName  As String = "計數 - 支出"
+Public Const ColShMoneySumIn2Name    As String = "加總 - 存入2"
+Public Const ColShMoneySumOut2Name   As String = "加總 - 支出2"
+Public Const ColShMoneyRatioIn3Name  As String = "佔比 - 存入3"
+Public Const ColShMoneyRatioOut3Name As String = "佔比 - 支出3"
 
 ' =========================================================
 ' Note: this one has to be the last as the item count is not fixed

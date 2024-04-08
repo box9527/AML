@@ -84,12 +84,19 @@ Private Sub Workbook_Open()
 End Sub
 
 Private Sub Workbook_SheetActivate(ByVal Sh As Object)
+    On Error Resume Next
+    Dim wsShOrg As Worksheet
+    Set wsShOrg = Worksheets(SheetNameOrginal)
+    On Error GoTo 0
+
     If Sh.name = SheetNameSimple Then
-        If Len(MainAccName) <= 0 Then
+        If (Len(MainAccName) <= 0) And (Not wsShOrg Is Nothing) Then
             With Worksheets(SheetNameOrginal)
                 MainAccName = .Cells(4, 2).value
                 MainAccId = .Cells(5, 2).value
             End With
+        Else
+            Exit Sub
         End If
 
         Sh.Range("O1").NumberFormat = ForceStringFormat

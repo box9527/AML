@@ -99,18 +99,7 @@ Private Sub Workbook_SheetActivate(ByVal Sh As Object)
             Exit Sub
         End If
 
-        Sh.Range("O1").NumberFormat = ForceStringFormat
-        Sh.Range("O1").value = MainAccName
-        Sh.Range("O2").NumberFormat = ForceStringFormat
-        Sh.Range("O2").value = MainAccId
-
-        Dim tbCustomerName As Shape
-        Dim tbCustomerAccount As Shape
-        Set tbCustomerName = Sh.Shapes("txtCustomerName")
-        Set tbCustomerAccount = Sh.Shapes("txtCustomerAccount")
-
-        tbCustomerName.DrawingObject.Object.Text = MainAccName
-        tbCustomerAccount.DrawingObject.Object.Text = MainAccId
+        ExcelUtils.RenewAccNameID MainAccName, MainAccId
     End If
 End Sub
 
@@ -127,6 +116,7 @@ Private Sub Workbook_SheetChange(ByVal Sh As Object, ByVal Target As Range)
 
         With Worksheets(SheetNameMain)
             Call .BtnAnalyze_Click
+            ExcelUtils.RenewAccNameID MainAccName, MainAccId
         End With
 
         Application.DisplayAlerts = True

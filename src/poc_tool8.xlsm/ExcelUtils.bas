@@ -621,3 +621,16 @@ Public Sub CreateBarChart(rowIndex1 As Integer, rowIndex2 As Integer, _
     chartObj.Chart.ChartTitle.Format.TextFrame2.TextRange.Font.name = FontName
     chartObj.Chart.ChartTitle.Format.TextFrame2.TextRange.Font.size = CharTitleFontSize
 End Sub
+
+' 這個子函式用來 "取出全域變數裡記載的帳戶名稱與帳號，重新填入 3.1交易明細"
+Public Sub RenewAccNameID(accName As String, accID As String)
+    With Worksheets(SheetNameSimple)
+        .Range("O1").NumberFormat = ForceStringFormat
+        .Range("O1").value = MainAccName
+        .Range("O2").NumberFormat = ForceStringFormat
+        .Range("O2").value = MainAccId
+
+        .Shapes("txtCustomerName").DrawingObject.Object.Text = MainAccName
+        .Shapes("txtCustomerAccount").DrawingObject.Object.Text = MainAccId
+    End With
+End Sub

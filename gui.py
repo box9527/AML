@@ -171,7 +171,7 @@ class GUIApp:
                 self.update_btn_state(True)
                 return
 
-        if (sdata == None) and (isexcel(filename) == True):
+        if (sdata is None) and (isexcel(filename) == True):
             bsuccess, sdata = self.prod.strict_excel(filename)
 
         self.checkpoint_progress(init_step=self.conv_progress_step_val(87))

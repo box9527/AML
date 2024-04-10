@@ -79,6 +79,8 @@ Public Const ColShOrgTicketCode As Integer = 16      ' 票號
 Public Const ColShOrgNote       As Integer = 17      ' 備註
 Public Const ColShOrgChannel    As Integer = 18      ' 註記
 
+Public Const RowShMainTSCCandRange As String = "A2:R2" ' 交易內容備用位置，3RC的位置跟解析PDF出來的位置不同
+
 ' 假設原始資料最多的 Column 數目就是最多 60 欄
 Public Const MaxSrcCol         As Long = 60
 

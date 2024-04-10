@@ -1508,6 +1508,9 @@ Private Sub NormalizeRawData()
         End If
         ' 抓交易內容
         MainTSCate = wsSrc.Range(ColShInDataTSCateRange)
+        If MainTSCate = "" Then
+            MainTSCate = wsSrc.Range(RowShMainTSCCandRange).Cells(1).Value
+        End If
     End If
 
     ' 如果 A1 是"交易日期"，表示原始資料不包含 客戶姓名 / 客戶帳號，

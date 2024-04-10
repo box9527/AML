@@ -89,7 +89,9 @@ End Function
 
 Public Function GetShOrgColsForRawData() As Variant()
     Dim arrColIDs()    As Variant
-    arrColIDs = Array("A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "O", "P")
+    ' 配合3RC產出，修改原始檔案欄位
+    ' arrColIDs = Array("A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "O", "P")
+    arrColIDs = Array("A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "L", "M", "N", "Q", "R")
 
     GetShOrgColsForRawData = arrColIDs
 End Function

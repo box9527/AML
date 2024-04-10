@@ -21,6 +21,8 @@ from utils.toolkit import (
         stylize_df,
         ispython,
         isfile,
+        isexcel,
+        ispdf,
         isdir,
         resource_path,
 )
@@ -49,12 +51,21 @@ class Productivity:
         self.cp_combined_result = f'工具8_異常態樣分析摘要.xlsm'
 
         # 這裡的 "支出" 與 "存入" 用 "Out" 以及 "In"取代，目的是跟工具七的欄位一致
+        # 20240403 配合3RC產出，改回 "支出" 與 "存入" 為的是跟洗防3RC的產出格式一樣
+        # 20240403 配合3RC產出，"行庫別" 與 "機台號碼" 是 3RC 新的
         self.rawdata_cols = {
             '交易日期':[],'帳務日期':[],'交易代號':[],'交易時間':[],'交易分行':[],'交易櫃員':[],
-            '摘要':[],'Out':[],'In':[],'餘額':[],
-            '轉出入帳號':[],'合作機構/會員編號':[],'金資序號':[],'票號':[],'備註':[],'註記':[]}
+            '摘要':[],'支出':[],'存入':[],'餘額':[],
+            '轉出入帳號':[], '合作機構/會員編號':[],'金資序號':[],
+            '票號':[],'備註':[],'註記':[]}
 
-        self.strict_cols = copy.deepcopy(self.rawdata_cols)
+        # 20240403 配合3RC產出 修改
+        #self.strict_cols = copy.deepcopy(self.rawdata_cols)
+        self.strict_cols = {
+                '交易日期':[],'帳務日期':[],'交易代號':[],'交易時間':[],'交易分行':[],'交易櫃員':[],
+                '摘要':[],'支出':[],'存入':[],'餘額':[],'行庫別':[],
+                '轉出入帳號':[], '合作機構/會員編號':[],'金資序號':[],'機台號碼':[],
+                '票號':[],'備註':[],'註記':[]}
 
         java_home = os.getenv('JAVA_HOME', '')
 
@@ -87,6 +98,25 @@ class Productivity:
             logger.error(f'Strict rawdata failed.')
 
         return bsuccess, strict_rawdata
+
+    def strict_excel(self, excel_path: str='') -> (bool, pd.DataFrame):
+        bsuccess = False
+        sdata = pd.read_excel(excel_path)
+
+        df1 = pd.DataFrame([[np.nan]* len(sdata.columns)], columns=sdata.columns)
+        sdata = pd.concat([df1, sdata]).reset_index(drop=True)
+        sdata = sdata.replace(np.nan, '', regex=True)
+        print(sdata)
+
+        with pd.ExcelWriter(self._cp_strict_rawdata) as writer:
+            sdata.to_excel(writer, sheet_name="Rawdata", index=False, header=False)
+
+        bsuccess = True
+        df_sheet_name = pd.read_excel(self._cp_strict_rawdata, sheet_name='Rawdata')
+        exportx = df_sheet_name.copy(deep=True)
+        exportx = exportx.replace(np.nan, '', regex=True)
+
+        return bsuccess, exportx
 
     def export_data(self, rawdata: pd.DataFrame=None) -> bool:
         bsuccess = self._combine_product(data=rawdata,)
@@ -208,19 +238,23 @@ class Productivity:
             deal_branch = try_or(lambda:f"{str(row['交易分行']).zfill(4)}",default=f"{row['交易分行']}")
             deal_teller = try_or(lambda:f"{str(row['交易櫃員']).zfill(5)}",default=f"{row['交易櫃員']}")
             summary = try_or(lambda:f"{row['摘要']}".strip(),default=f"{row['摘要']}")
-            m_out = try_or(lambda:f"{row['Out']:,.2f}",default=f"{row['Out']}")
-            m_in = try_or(lambda:f"{row['In']:,.2f}",default=f"{row['In']}")
+            m_out = try_or(lambda:f"{row['支出']:,.2f}",default=f"{row['支出']}")
+            m_in = try_or(lambda:f"{row['存入']:,.2f}",default=f"{row['存入']}")
             m_balance = try_or(lambda:f"{row['餘額']:,.2f}",default=f"{row['餘額']}")
+            bk_category = ''
             tr_acc = try_or(lambda:f"{row['轉出入帳號']}".strip(),default=f"{row['轉出入帳號']}")
             tr_infra = try_or(lambda:f"{row['合作機構/會員編號']}".strip(),default=f"{row['合作機構/會員編號']}")
 
             m_number = try_or(lambda:f"{row['金資序號']}".strip(),default=f"{row['金資序號']}")
+            d_number = ''
             t_number = try_or(lambda:f"{row['票號']}".strip(),default=f"{row['票號']}")
             comment = try_or(lambda:f"{row['備註']}".strip(),default=f"{row['備註']}")
             tmp = try_or(lambda:f"{row['註記']}".strip(),default=f"{row['註記']}")
 
             return deal_date, acc_date, deal_code, deal_time, deal_branch, deal_teller, \
-                    summary, m_out, m_in, m_balance, tr_acc, tr_infra, m_number, t_number, comment, tmp
+                    summary, m_out, m_in, m_balance, bk_category, \
+                    tr_acc, tr_infra, m_number, d_number, \
+                    t_number, comment, tmp
 
         try:
             if rawdata is None: return (bsuccess, exportx)
@@ -228,15 +262,17 @@ class Productivity:
             export = pd.DataFrame( self.strict_cols )
             export['交易日期'], export['帳務日期'], export['交易代號'],\
             export['交易時間'], export['交易分行'], export['交易櫃員'],\
-            export['摘要'], export['Out'], export['In'],\
-            export['餘額'], export['轉出入帳號'], export['合作機構/會員編號'],\
-            export['金資序號'], export['票號'],\
+            export['摘要'], export['支出'], export['存入'],\
+            export['餘額'], export['行庫別'],\
+            export['轉出入帳號'], export['合作機構/會員編號'],\
+            export['金資序號'], export['機台號碼'],\
+            export['票號'],\
             export['備註'], \
             export['註記'] \
             = zip(*rawdata.apply(rawdata_formatting, axis=1))
 
-            export = export[((export['Out'] == export['Out']) ) |
-            ((export['In'] == export['In']))]
+            export = export[((export['支出'] == export['支出']) ) |
+            ((export['存入'] == export['存入']))]
 
             exportx = export.copy(deep=True)
             exportx = exportx.replace(np.nan, '', regex=True)
@@ -251,26 +287,36 @@ class Productivity:
             exportx = export.copy(deep=True)
             exportx = exportx.replace(np.nan, '', regex=True)
             with pd.ExcelWriter(self._cp_strict_rawdata) as writer:
-                exportx.to_excel(writer, sheet_name="Rawdata", startrow=8, index=False)
+                # 20240403, 配合3RC產出，header 從 row 6開始
+                #exportx.to_excel(writer, sheet_name="Rawdata", startrow=8, index=False)
+                exportx.to_excel(writer, sheet_name="Rawdata", startrow=6, index=False)
 
             df_sheet_name = pd.read_excel(self._cp_strict_rawdata, sheet_name='Rawdata')
             exportx = df_sheet_name.copy(deep=True)
             exportx = exportx.replace(np.nan, '', regex=True)
             user_info = get_user_info(self.cash_flow)
-            exportx.loc[3, 'Unnamed: 0'] = '客戶：'
-            exportx.loc[3, 'Unnamed: 1'] = try_or(lambda:f"{str(user_info['客戶'])}",default=f"{user_info['客戶']}")
-            exportx.loc[3, 'Unnamed: 3'] = '產品別：'
-            exportx.loc[3, 'Unnamed: 4'] = user_info['產品別']
-            exportx.loc[3, 'Unnamed: 6'] = '查詢起日：'
-            exportx.loc[3, 'Unnamed: 7'] = user_info['查詢起日']
+            # 20240403, 配合3RC產出，修改以下欄位位置
+            exportx.loc[3, 'Unnamed: 0'] = '戶名：'
+            exportx.loc[3, 'Unnamed: 1'] = try_or(lambda:f"{str(user_info['戶名'])}",default=f"{user_info['戶名']}")
+            exportx.loc[4, 'Unnamed: 5'] = '產品別：'
+            exportx.loc[4, 'Unnamed: 6'] = user_info['產品別']
+            exportx.loc[3, 'Unnamed: 13'] = '列印日期：'
+            exportx.loc[3, 'Unnamed: 14'] = user_info['列印日期']
+            exportx.loc[4, 'Unnamed: 13'] = '查詢起日：'
+            exportx.loc[4, 'Unnamed: 14'] = user_info['查詢起日']
             exportx.loc[4, 'Unnamed: 0'] = '帳號：'
             exportx.loc[4, 'Unnamed: 1'] = try_or(lambda:f"{str(user_info['帳號'])}",default=f"{user_info['帳號']}")
-            exportx.loc[4, 'Unnamed: 3'] = '幣別：'
-            exportx.loc[4, 'Unnamed: 4'] = user_info['幣別']
-            exportx.loc[4, 'Unnamed: 6'] = '查詢迄日：'
-            exportx.loc[4, 'Unnamed: 7'] = user_info['查詢迄日']
-            exportx.loc[5, 'Unnamed: 0'] = ''
-            exportx.loc[6, 'Unnamed: 0'] = user_info['交易內容']
+            exportx.loc[4, 'Unnamed: 9'] = '幣別：'
+            exportx.loc[4, 'Unnamed: 10'] = user_info['幣別']
+            exportx.loc[3, 'Unnamed: 16'] = '櫃員代號：'
+            exportx.loc[3, 'Unnamed: 17'] = user_info['櫃員代號']
+            exportx.loc[4, 'Unnamed: 16'] = '查詢迄日：'
+            exportx.loc[4, 'Unnamed: 17'] = user_info['查詢迄日']
+            # 20240403, 配合3RC產出，交易內容 改去 08，data header 與 客戶資訊間不空行
+            #exportx.loc[5, 'Unnamed: 0'] = ''
+            #exportx.loc[6, 'Unnamed: 0'] = user_info['交易內容']
+            exportx.loc[1, 'Unnamed: 8'] = user_info['交易內容']
+
             with pd.ExcelWriter(self._cp_strict_rawdata) as writer:
                 exportx.to_excel(writer, sheet_name="Rawdata", index=False, header=False)
 
@@ -306,7 +352,7 @@ class Productivity:
 
             sheet_strcol_dict = {
                 # 定義有哪幾欄的資料是"必須要強制為字串格式的"
-                "1原始資料": [1, 2, 3, 5, 6, 11, 12, 13, 14, 15, 16],
+                "1原始資料": [1, 2, 3, 5, 6, 11, 12, 13, 14, 15, 16, 17, 18],
             }
             
             for tab_name, tab_ctx in gen_dfs.items():

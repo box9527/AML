@@ -31,7 +31,7 @@ Public Function ConvVAccName(bankID As String, account As String) As String
         Next key
     End If
 
-    ConvVAccName = Trim(ret)
+    ConvVAccName = CStr(Trim(ret))
 End Function
 
 Public Function IsWarningAcc(account As String) As Boolean

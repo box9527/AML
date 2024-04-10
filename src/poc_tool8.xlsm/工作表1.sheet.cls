@@ -1322,6 +1322,9 @@ Sub FillSimplePage(arrColumnIDs() As Variant)
     ' Start duplicating columns from the 7th column in the destination sheet
     lastRow = ExcelUtils.GetLastRowNumber(wsSrc)
 
+    Dim destLastRow As Long
+    destLastRow = lastRow + RowShInDataSimpleGaps
+
     ExcelUtils.ApplySheetSimpleStyle
 
     ' Copy source columns
@@ -1329,8 +1332,8 @@ Sub FillSimplePage(arrColumnIDs() As Variant)
     'arrDup = Array(1, 16, 4, 17, 18, 9, 10, 14, 13, 27)
         If colID >= 1 And colID <= wsSrc.columns.Count Then
             wsDest.Range( _
-                wsDest.Cells(RowHeaderBegin, destCol), _
-                wsDest.Cells(lastRow, destCol)).value = _
+                wsDest.Cells(RowShSimpleHeaderBegin, destCol), _
+                wsDest.Cells(destLastRow, destCol)).value = _
                 wsSrc.Range(wsSrc.Cells(RowHeaderBegin, colID), wsSrc.Cells(lastRow, colID)).value
 
             wsDest.columns(destCol).AutoFit
@@ -1340,18 +1343,18 @@ Sub FillSimplePage(arrColumnIDs() As Variant)
 
     ' used in checking virtual accounts and channels
     ' 暫時性資料， Y 欄紀錄交易通路；Z 欄紀錄銀行代碼
-    wsDest.Range(wsDest.Cells(RowHeaderBegin, ColShSimpleTempTSCh), wsDest.Cells(lastRow, ColShSimpleTempTSCh)).value = _
+    wsDest.Range(wsDest.Cells(RowShSimpleHeaderBegin, ColShSimpleTempTSCh), wsDest.Cells(destLastRow, ColShSimpleTempTSCh)).value = _
                 wsSrc.Range(wsSrc.Cells(RowHeaderBegin, ColShInDataTSChannel), wsSrc.Cells(lastRow, ColShInDataTSChannel)).value
-    wsDest.Range(wsDest.Cells(RowHeaderBegin, ColShSimpleTempCode), wsDest.Cells(lastRow, ColShSimpleTempCode)).value = _
+    wsDest.Range(wsDest.Cells(RowShSimpleHeaderBegin, ColShSimpleTempCode), wsDest.Cells(destLastRow, ColShSimpleTempCode)).value = _
                 wsSrc.Range(wsSrc.Cells(RowHeaderBegin, ColShInDataBankCode), wsSrc.Cells(lastRow, ColShInDataBankCode)).value
 
     ' 暫時性資料， AA 欄紀錄照會帳戶, 虛擬帳號對應公司名；AB 欄紀錄標誌虛擬原因
     '             AC 欄紀錄警示帳戶
-    wsDest.Range(wsDest.Cells(RowHeaderBegin, ColShSimpleTempVAccName), wsDest.Cells(lastRow, ColShSimpleTempVAccName)).value = _
+    wsDest.Range(wsDest.Cells(RowShSimpleHeaderBegin, ColShSimpleTempVAccName), wsDest.Cells(destLastRow, ColShSimpleTempVAccName)).value = _
                 wsSrc.Range(wsSrc.Cells(RowHeaderBegin, ColShInDataVAccCName), wsSrc.Cells(lastRow, ColShInDataVAccCName)).value
-    wsDest.Range(wsDest.Cells(RowHeaderBegin, ColShSimpleTempVAccReason), wsDest.Cells(lastRow, ColShSimpleTempVAccReason)).value = _
+    wsDest.Range(wsDest.Cells(RowShSimpleHeaderBegin, ColShSimpleTempVAccReason), wsDest.Cells(destLastRow, ColShSimpleTempVAccReason)).value = _
                 wsSrc.Range(wsSrc.Cells(RowHeaderBegin, ColShInDataVAccReason), wsSrc.Cells(lastRow, ColShInDataVAccReason)).value
-    wsDest.Range(wsDest.Cells(RowHeaderBegin, ColShSimpleTempWAccName), wsDest.Cells(lastRow, ColShSimpleTempWAccName)).value = _
+    wsDest.Range(wsDest.Cells(RowShSimpleHeaderBegin, ColShSimpleTempWAccName), wsDest.Cells(destLastRow, ColShSimpleTempWAccName)).value = _
                 wsSrc.Range(wsSrc.Cells(RowHeaderBegin, ColShInDataWAccCName), wsSrc.Cells(lastRow, ColShInDataWAccCName)).value
 
     ' 設定其他3.1交易明細特有的欄位： 顏色標註、表徵、調查結果
@@ -1363,10 +1366,10 @@ Sub FillSimplePage(arrColumnIDs() As Variant)
     Dim cellTime As Date
     Dim strAcc   As String
     Dim i        As Long
-    For i = RowDataBegin To lastRow
+    For i = RowShSimpleDataBegin To destLastRow
         ' set background color
         ' 每兩行標註為黃色底
-        If (i - RowDataBegin) Mod 2 = 0 Then
+        If (i - RowShSimpleDataBegin) Mod 2 = 0 Then
             wsDest.Range(wsDest.Cells(i, ColShSimpleTSDate), wsDest.Cells(i, ColShSimpleAlertReason)).Interior.color = ColorYellow
         End If
 
@@ -1470,16 +1473,41 @@ Private Sub NormalizeRawData()
 
     ExcelUtils.ClearSheet SheetNameInputData
 
-    ' 抓客戶姓名
-    If wsSrc.Range(ColShInDataBeginRange) = "" And _
-       InStr(1, wsSrc.Range(ColShInDataCustomerRange), ColShInDataCustomerRegex) = 1 Then
-        MainAccName = wsSrc.Range(ColShInDataCustNameRange)
-    End If
-
-    ' 抓客戶帳號
-    If wsSrc.Range(ColShInDataBeginRange) = "" And _
-        InStr(1, wsSrc.Range(ColShInDataAccRange), ColShInDataAccRegex) = 1 Then
-        MainAccId = wsSrc.Range(ColShInDataAccIDRange)
+    If wsSrc.Range(ColShInDataBeginRange) = "" Then
+        ' 抓客戶姓名
+        If InStr(1, wsSrc.Range(ColShInDataCustomerRange), ColShInDataCustomerRegex) = 1 Then
+            MainAccName = wsSrc.Range(ColShInDataCustNameRange)
+        End If
+        ' 抓客戶帳號
+        If InStr(1, wsSrc.Range(ColShInDataAccRange), ColShInDataAccRegex) = 1 Then
+            MainAccId = wsSrc.Range(ColShInDataAccIDRange)
+        End If
+        ' 抓產品別
+        If InStr(1, wsSrc.Range(ColShInDataProdRange), ColShInDataProdRegex) = 1 Then
+            MainProduct = wsSrc.Range(ColShInDataProdCateRange)
+        End If
+        ' 抓幣別
+        If InStr(1, wsSrc.Range(ColShInDataCurrRange), ColShInDataCurrRegex) = 1 Then
+            MainCurrency = wsSrc.Range(ColShInDataCurrTypeRange)
+        End If
+        ' 抓列印日期
+        If InStr(1, wsSrc.Range(ColShInDataPrintRange), ColShInDataPrintRegex) = 1 Then
+            MainPrintDate = wsSrc.Range(ColShInDataPrintDateRange)
+        End If
+        ' 抓查詢起日
+        If InStr(1, wsSrc.Range(ColShInDataQStartRange), ColShInDataQStartRegex) = 1 Then
+            MainQueryStart = wsSrc.Range(ColShInDataQStartDateRange)
+        End If
+        ' 抓櫃員代號
+        If InStr(1, wsSrc.Range(ColShInDataTellerRange), ColShInDataTellerRegex) = 1 Then
+            MainTellerCode = wsSrc.Range(ColShInDataTellerCodeRange)
+        End If
+        ' 抓查詢迄日
+        If InStr(1, wsSrc.Range(ColShInDataQEndRange), ColShInDataQEndRegex) = 1 Then
+            MainQueryEnd = wsSrc.Range(ColShInDataQEndDateRange)
+        End If
+        ' 抓交易內容
+        MainTSCate = wsSrc.Range(ColShInDataTSCateRange)
     End If
 
     ' 如果 A1 是"交易日期"，表示原始資料不包含 客戶姓名 / 客戶帳號，
@@ -1507,6 +1535,27 @@ Private Sub NormalizeRawData()
                     wsDest.Range(arrDst(i) & CStr(lastRow))).value = _
                     wsSrc.Range(wsSrc.Range(arrSrc(i) & "1"), wsSrc.Range(arrSrc(i) & CStr(lastRow))).value
     Next i
+
+    '  上面的資料因為欄位挑選的關係 會跑掉，所以重新設定 1:5 這幾行 user info
+    wsDest.Rows(RowShInDataEmpty).Clear
+    wsDest.Range(ColShInDataCustomerRange).value = ColShInDataCustomerRegex & ":"
+    wsDest.Range(ColShInDataCustNameRange).value = MainAccName
+    wsDest.Range(ColShInDataAccRange).value = ColShInDataAccRegex & ":"
+    wsDest.Range(ColShInDataAccIDRange).NumberFormat = ForceStringFormat
+    wsDest.Range(ColShInDataAccIDRange).value = MainAccId
+    wsDest.Range(ColShInDataProdRange).value = ColShInDataProdRegex & ":"
+    wsDest.Range(ColShInDataProdCateRange).value = MainProduct
+    wsDest.Range(ColShInDataCurrRange).value = ColShInDataCurrRegex & ":"
+    wsDest.Range(ColShInDataCurrTypeRange).value = MainCurrency
+    wsDest.Range(ColShInDataQStartRange).value = ColShInDataQStartRegex & ":"
+    wsDest.Range(ColShInDataQStartDateRange).value = MainQueryStart
+    wsDest.Range(ColShInDataQEndRange).value = ColShInDataQEndRegex & ":"
+    wsDest.Range(ColShInDataQEndDateRange).value = MainQueryEnd
+    wsDest.Range(ColShInDataTSCateRange).value = MainTSCate
+    wsDest.Range(ColShInDataPrintRange).value = ColShInDataPrintRegex & ":"
+    wsDest.Range(ColShInDataPrintDateRange).value = MainPrintDate
+    wsDest.Range(ColShInDataTellerRange).value = ColShInDataTellerRegex & ":"
+    wsDest.Range(ColShInDataTellerCodeRange).value = MainTellerCode
 
     ' Prepare headers
     ' 寫header 的name
@@ -1552,8 +1601,14 @@ Private Sub NormalizeRawData()
         strClerk = wsSrc.Cells(i, ColShOrgTSTeller).value
         strSummary = wsSrc.Cells(i, ColShOrgSummary).value
 
-        amtWithdraw = wsSrc.Cells(i, ColShOrgAmtDraw).value
-        amtDeposit = wsSrc.Cells(i, ColShOrgAmtDeposit).value
+        If Len(wsSrc.Cells(i, ColShOrgAmtDraw).value) > 0 Then
+            amtWithdraw = CLng(wsSrc.Cells(i, ColShOrgAmtDraw).value)
+        End If
+
+        If Len(wsSrc.Cells(i, ColShOrgAmtDeposit).value) > 0 Then
+            amtDeposit = CLng(wsSrc.Cells(i, ColShOrgAmtDeposit).value)
+        End If
+
         strAccount = wsSrc.Cells(i, ColShOrgAccount)
         strSerial = wsSrc.Cells(i, ColShOrgSerialCode).value
         strNote = wsSrc.Cells(i, ColShOrgChannel).value

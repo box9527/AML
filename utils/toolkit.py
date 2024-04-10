@@ -53,6 +53,28 @@ def isfile(path):
 
     return bfile
 
+def isexcel(path):
+    bexcel = False
+    try:
+        fname, fext = os.path.splitext(path)
+        if (isfile(path) == True) and (fext.lower() == '.xlsx'):
+            bexcel = True
+    except:
+        pass
+
+    return bexcel
+
+def ispdf(path):
+    bpdf = False
+    try:
+        fname, fext = os.path.splitext(path)
+        if (isfile(path) == True) and (fext.lower() == '.pdf'):
+            bpdf = True
+    except:
+        pass
+
+    return bpdf
+
 def isdir(path):
     bdir = False
     try:

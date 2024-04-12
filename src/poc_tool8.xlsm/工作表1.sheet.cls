@@ -1509,7 +1509,7 @@ Private Sub NormalizeRawData()
         ' 抓交易內容
         MainTSCate = wsSrc.Range(ColShInDataTSCateRange)
         If MainTSCate = "" Then
-            MainTSCate = wsSrc.Range(RowShMainTSCCandRange).Cells(1).Value
+            MainTSCate = wsSrc.Range(RowShMainTSCCandRange).Cells(1).value
         End If
     End If
 
@@ -1743,7 +1743,7 @@ Sub CreatePivotTables()
     Set wsSrc = ThisWorkbook.Sheets(SheetNameInputData)
     Set wsDest = ThisWorkbook.Sheets(SheetNameMoney)
 
-    ExcelUtils.RemoveAllPivotTables(SheetNameMoney)
+    ExcelUtils.RemoveAllPivotTables (SheetNameMoney)
 
     ' 設定資料範圍
     lastRow = ExcelUtils.GetLastRowNumber(wsSrc)
@@ -1777,7 +1777,7 @@ Sub CreatePivotTables()
         With .PivotFields(ColShMoneyDepositName)
             .Orientation = xlDataField
             .Function = xlSum            ' 設定聚合函數
-            .NumberFormat = NumberFormat ' 設定數值格式
+            .NumberFormat = IntegerNumberFormat ' 設定數值格式
         End With
 
         ' 這裡如果放到 別的地方去做，包含 call function，就會畫不出 "加總 - In2" 之類的欄位...
@@ -1815,7 +1815,7 @@ Sub CreatePivotTables()
         With .PivotFields(ColShMoneyWithdrawName)
             .Orientation = xlDataField
             .Function = xlSum            ' 設定聚合函數
-            .NumberFormat = NumberFormat ' 設定數值格式
+            .NumberFormat = IntegerNumberFormat ' 設定數值格式
         End With
 
         With wsDest.Range("A" & CStr(.TableRange1.Cells(1, 1).row - 1))
@@ -1853,7 +1853,7 @@ Sub CreatePivotTables()
         .AddDataField .PivotFields(ColShMoneyDepositName), ColShMoneySumIn2Name, xlSum
         .AddDataField .PivotFields(ColShMoneyDepositName), ColShMoneyRatioIn3Name, xlSum
 
-        .PivotFields(ColShMoneySumIn2Name).NumberFormat = NumberFormat
+        .PivotFields(ColShMoneySumIn2Name).NumberFormat = IntegerNumberFormat
         .PivotFields(ColShMoneyRatioIn3Name).Calculation = xlPercentOfTotal
         .PivotFields(ColShMoneyRatioIn3Name).NumberFormat = "0%"
         .PivotFields(ColShMoneyTSSummaryName).ClearAllFilters
@@ -1894,9 +1894,6 @@ Sub CreatePivotTables()
         End With
 
         wsDest.Range("B" & CStr(rowPivot - 1)).value = HintDoubleClick
-        ' 此變數在這裡 Set 後，可供 工作表18 裡的操作使用，
-        ' 請勿移除！
-        Set HeaderPivotTable3 = wsDest.Range("A" & CStr(rowPivot - 1))
 
         ' Keep top k only
         ' 記錄起來，等等跟並排的 table4 比較長度，取最長的那個。
@@ -1927,7 +1924,7 @@ Sub CreatePivotTables()
         .AddDataField .PivotFields(ColShMoneyWithdrawName), ColShMoneySumOut2Name, xlSum
         .AddDataField .PivotFields(ColShMoneyWithdrawName), ColShMoneyRatioOut3Name, xlSum
 
-        .PivotFields(ColShMoneySumOut2Name).NumberFormat = NumberFormat
+        .PivotFields(ColShMoneySumOut2Name).NumberFormat = IntegerNumberFormat
         .PivotFields(ColShMoneyRatioOut3Name).Calculation = xlPercentOfTotal
         .PivotFields(ColShMoneyRatioOut3Name).NumberFormat = "0%"
         .PivotFields(ColShMoneyTSSummaryName).ClearAllFilters
@@ -1968,9 +1965,6 @@ Sub CreatePivotTables()
         End With
 
         wsDest.Range("I" & CStr(rowPivot - 1)).value = HintDoubleClick
-        ' 此變數在這裡 Set 後，可供 工作表18 裡的操作使用，
-        ' 請勿移除！
-        Set HeaderPivotTable4 = wsDest.Range("H" & CStr(rowPivot - 1))
 
         ' Keep top k only 並排在右邊時使用
         With .TableRange1
@@ -2017,7 +2011,7 @@ Sub CreatePivotTables()
         .AddDataField .PivotFields(ColShMoneyDepositName), ColShMoneySumIn2Name, xlSum
         .AddDataField .PivotFields(ColShMoneyDepositName), ColShMoneyRatioIn3Name, xlSum
 
-        .PivotFields(ColShMoneySumIn2Name).NumberFormat = NumberFormat
+        .PivotFields(ColShMoneySumIn2Name).NumberFormat = IntegerNumberFormat
         .PivotFields(ColShMoneyRatioIn3Name).Calculation = xlPercentOfTotal
         .PivotFields(ColShMoneyRatioIn3Name).NumberFormat = "0%"
         .PivotFields(ColShMoneyTSSummaryName).ClearAllFilters
@@ -2058,9 +2052,6 @@ Sub CreatePivotTables()
         End With
 
         wsDest.Range("B" & CStr(rowPivot - 1)).value = HintDoubleClick
-        ' 此變數在這裡 Set 後，可供 工作表18 裡的操作使用，
-        ' 請勿移除！
-        Set HeaderPivotTable5 = wsDest.Range("A" & CStr(rowPivot - 1))
 
         ' Keep top k only 並排在左邊使用
         With .TableRange1
@@ -2090,7 +2081,7 @@ Sub CreatePivotTables()
         .AddDataField .PivotFields(ColShMoneyWithdrawName), ColShMoneySumOut2Name, xlSum
         .AddDataField .PivotFields(ColShMoneyWithdrawName), ColShMoneyRatioOut3Name, xlSum
 
-        .PivotFields(ColShMoneySumOut2Name).NumberFormat = NumberFormat
+        .PivotFields(ColShMoneySumOut2Name).NumberFormat = IntegerNumberFormat
         .PivotFields(ColShMoneyRatioOut3Name).Calculation = xlPercentOfTotal
         .PivotFields(ColShMoneyRatioOut3Name).NumberFormat = "0%"
         .PivotFields(ColShMoneyTSSummaryName).ClearAllFilters
@@ -2131,9 +2122,6 @@ Sub CreatePivotTables()
         End With
 
         wsDest.Range("I" & CStr(rowPivot - 1)).value = HintDoubleClick
-        ' 此變數在這裡 Set 後，可供 工作表18 裡的操作使用，
-        ' 請勿移除！
-        Set HeaderPivotTable6 = wsDest.Range("H" & CStr(rowPivot - 1))
 
         ' Keep top k only
         With .TableRange1

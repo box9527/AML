@@ -17,6 +17,7 @@ Public Const AnalyBtnFontSize  As Integer = 24
 Public Const DateFormat        As String = "yyyy/mm/dd"
 Public Const TimeFormat        As String = "hh:mm:ss"
 Public Const NumberFormat      As String = "_(* #,##0.00_);_(* (#,##0.00);_(* "" - ""??_);_(@_)"
+Public Const IntegerNumberFormat      As String = "_(* #,##0_);_(* (#,##0);_(* "" - ""??_);_(@_)"
 Public Const MoneyFormat       As String = "$#,##0.00;-$#,##0.00"
 Public Const GeneralFormat     As String = "General"
 Public Const ForceStringFormat As String = "@"

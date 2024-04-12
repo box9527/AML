@@ -2,6 +2,54 @@
 ' Sheet page 3.2金流與交易對手
 ' =================================================
 
+Private Sub Worksheet_Activate()
+    InitPivotHeaders
+End Sub
+
+Public Sub InitPivotHeaders()
+    Dim addr As String
+
+    On Error Resume Next
+    addr = ""
+    addr = GetPivotTableClickAreaAddr(PivotTableName03)
+    If addr <> "" Then
+        Set HeaderPivotTable3 = Range(addr)
+    End If
+    addr = ""
+    addr = GetPivotTableClickAreaAddr(PivotTableName04)
+    If addr <> "" Then
+        Set HeaderPivotTable4 = Range(addr)
+    End If
+    
+    addr = ""
+    addr = GetPivotTableClickAreaAddr(PivotTableName05)
+    If addr <> "" Then
+        Set HeaderPivotTable5 = Range(addr)
+    End If
+
+    addr = ""
+    addr = GetPivotTableClickAreaAddr(PivotTableName06)
+    If addr <> "" Then
+        Set HeaderPivotTable6 = Range(addr)
+    End If
+    On Error GoTo 0
+
+End Sub
+
+Private Function GetPivotTableClickAreaAddr(pivotTableName As String) As String
+    Dim ws As Worksheet
+    Dim pt As PivotTable
+    Dim topLeftCell As Range
+    ' Assuming the PivotTable is on the active sheet
+    Set ws = ThisWorkbook.Sheets(SheetNameMoney)
+    ' Find the PivotTable by name
+    Set pt = ws.PivotTables(pivotTableName)
+    ' Get the top-left cell of the PivotTable
+    Set topLeftCell = pt.TableRange1.Cells(1, 1)
+    ' Return the address of the top-left cell
+    GetPivotTableClickAreaAddr = ws.Cells(topLeftCell.row - 1, topLeftCell.Column).Address
+End Function
+
 Private Sub Worksheet_BeforeDoubleClick(ByVal Target As Range, Cancel As Boolean)
 
     Set ws = ThisWorkbook.Sheets(SheetNameMoney)
@@ -14,13 +62,14 @@ Private Sub Worksheet_BeforeDoubleClick(ByVal Target As Range, Cancel As Boolean
             If pt Is Nothing Then
                 Exit Sub
             End If
-            With pt.PivotFields(ColShMoneyAccountName)
+            With pt.PivotFields(ColShMoneyPivotAccountName)
 
                 If .AutoSortField = ColShMoneyCountInName Then
                     .AutoSort xlDescending, ColShMoneySumIn2Name
                 Else
                     .AutoSort xlDescending, ColShMoneyCountInName
                 End If
+                ActiveCell.Offset(0, 1).Select
             End With
         End If
     End If
@@ -34,12 +83,13 @@ Private Sub Worksheet_BeforeDoubleClick(ByVal Target As Range, Cancel As Boolean
             If pt Is Nothing Then
                 Exit Sub
             End If
-            With pt.PivotFields(ColShMoneyAccountName)
+            With pt.PivotFields(ColShMoneyPivotAccountName)
                 If .AutoSortField = ColShMoneyCountOutName Then
                     .AutoSort xlDescending, ColShMoneySumOut2Name
                 Else
                     .AutoSort xlDescending, ColShMoneyCountOutName
                 End If
+                ActiveCell.Offset(0, 1).Select
             End With
         End If
     End If
@@ -53,12 +103,13 @@ Private Sub Worksheet_BeforeDoubleClick(ByVal Target As Range, Cancel As Boolean
             If pt Is Nothing Then
                 Exit Sub
             End If
-            With pt.PivotFields(ColShMoneyAccountName)
+            With pt.PivotFields(ColShMoneyPivotAccountName)
                 If .AutoSortField = ColShMoneyCountInName Then
                     .AutoSort xlDescending, ColShMoneySumIn2Name
                 Else
                     .AutoSort xlDescending, ColShMoneyCountInName
                 End If
+                ActiveCell.Offset(0, 1).Select
             End With
         End If
     End If
@@ -72,12 +123,13 @@ Private Sub Worksheet_BeforeDoubleClick(ByVal Target As Range, Cancel As Boolean
             If pt Is Nothing Then
                 Exit Sub
             End If
-            With pt.PivotFields(ColShMoneyAccountName)
+            With pt.PivotFields(ColShMoneyPivotAccountName)
                 If .AutoSortField = ColShMoneyCountOutName Then
                     .AutoSort xlDescending, ColShMoneySumOut2Name
                 Else
                     .AutoSort xlDescending, ColShMoneyCountOutName
                 End If
+                ActiveCell.Offset(0, 1).Select
             End With
         End If
     End If

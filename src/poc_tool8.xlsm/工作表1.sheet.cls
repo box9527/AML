@@ -1414,6 +1414,17 @@ Sub FillSimplePage(arrColumnIDs() As Variant)
                 ExcelUtils.HighlightRow SheetNameSimple, i, ReasonDWLAlert, ColorRed
             End If
         End If
+
+        ' 20240412, As a new request, if vaule in ColNote is as the same as value in ColTSAcc,
+        '           then keep the value in ColTSAcc and erase the value in ColNote
+        Dim tmpColNote       As String
+        Dim tmpColTSInOutAcc As String
+        tmpColNote = Utils.RemoveLeadingZeros(CStr(wsDest.Cells(i, ColShSimpleNote).Value))
+        tmpColTSInOutAcc = Utils.RemoveLeadingZeros(CStr(wsDest.Cells(i, ColShSimpleTSInOutAcc).Value))
+        If Utils.GuessIfIsTheSame(tmpColNote, tmpColTSInOutAcc) = True Then
+        'If tmpColNote = tmpColTSInOutAcc Then
+            wsDest.Cells(i, ColShSimpleNote).Value = ""
+        End If
     Next i
 
     ' FIXME: pass object
@@ -1589,7 +1600,7 @@ Private Sub NormalizeRawData()
     Dim amtWithdraw    As Long
     Dim amtDeposit     As Long
     Dim strSummary     As String
-    Dim strSerial      As String
+    Dim strBankCat     As String
     Dim strNote        As String
     Dim strStore       As String
     Dim strClerk       As String
@@ -1613,7 +1624,7 @@ Private Sub NormalizeRawData()
         End If
 
         strAccount = wsSrc.Cells(i, ColShOrgAccount)
-        strSerial = wsSrc.Cells(i, ColShOrgSerialCode).value
+        strBankCat = wsSrc.Cells(i, ColShOrgBankCat).value
         strNote = wsSrc.Cells(i, ColShOrgChannel).value
 
         wsDest.Cells(i, ColShInDataTSMonth).value = Left(wsSrc.Cells(i, ColShOrgTSDate).Text, 7)
@@ -1635,7 +1646,7 @@ Private Sub NormalizeRawData()
         wsDest.Cells(i, ColShInDataTSSummary).value = ExcelUtils.ConvToColTSSummary(strSummary)
 
         '"銀行代碼"欄位
-        wsDest.Cells(i, ColShInDataBankCode).value = ExcelUtils.ConvToBankCode(strSerial)
+        wsDest.Cells(i, ColShInDataBankCode).value = ExcelUtils.ConvToBankCode(strBankCat)
 
         ' 交易通路
         wsDest.Cells(i, ColShInDataTSChannel).value = ExcelUtils.ConvToChannel(strNote, strStore, _
@@ -1747,6 +1758,10 @@ Sub CreatePivotTables()
 
     ' 設定資料範圍
     lastRow = ExcelUtils.GetLastRowNumber(wsSrc)
+    If lastRow <= RowDataBegin Then
+        GoTo EmptyPT
+    End If
+    
 
     Set dataRange = wsSrc.Range(ColShInDataRangePrefix & CStr(lastRow))
 
@@ -2326,6 +2341,9 @@ Sub CreatePivotTables()
         ' =================================================
     End If
     ' End of ATM related PivotTables
-
+    
     ExcelUtils.ApplySheetMoneyStyle
+    
+EmptyPT:
+    lastRow = RowDataBegin
 End Sub

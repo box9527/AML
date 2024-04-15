@@ -142,3 +142,47 @@ Public Function SumDictValues(dict As Object) As Double
     ' Return the total sum
     SumDictValues = total
 End Function
+
+Public Function RemoveLeadingZeros(ByVal str) As String
+    Dim tmpStr As String
+    tmpStr = str
+    While (Left(tmpStr, 1) = "0") AND (tmpStr <> "")
+        tmpStr = Right(tmpStr, Len(tmpStr)-1)
+    Wend
+
+    RemoveLeadingZeros = tmpStr
+End Function
+
+Public Function GuessIfIsTheSame(ByVal str1, ByVal str2) As Boolean
+    Dim bIsTheSame As Boolean
+    bIsTheSame = True
+    tmpStr1 = str1
+    tmpStr2 = str2
+    If Len(tmpStr1) <> Len(tmpStr2) Then
+        bIsTheSame = False
+    Else
+        While ((tmpStr1 <> "") AND (tmpStr2 <> ""))
+            If (Left(tmpStr1, 1) <> "*") AND (Left(tmpStr2, 1) <> "*") AND (Left(tmpStr1, 1) <> Left(tmpStr2, 1)) Then
+                bIsTheSame = False
+                GoTo EndOfFunc
+            Else
+                tmpStr1 = Right(tmpStr1, Len(tmpStr1)-1)
+                tmpStr2 = Right(tmpStr2, Len(tmpStr2)-1)
+            End If
+        Wend
+    End If
+
+EndOfFunc:
+    GuessIfIsTheSame = bIsTheSame
+End Function
+
+Public Function SkipLeadingZeros(account As String) As String
+    Dim skipzerodAcc As String
+    skipzeroAcc = Trim(account)
+    
+    Do While Left(skipzeroAcc, 1) = "0" And Len(skipzeroAcc) > 1
+        skipzeroAcc = Mid(skipzeroAcc, 2)
+    Loop
+    
+    SkipLeadingZeros = skipzeroAcc
+End Function

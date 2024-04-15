@@ -19,6 +19,7 @@ Public Function ConvVAccName(bankID As String, account As String) As String
     Dim ret As String
     Dim b   As Boolean
 
+    account = Utils.SkipLeadingZeros(account)
     If (Len(bankID) > 0) And (Len(account) > 0) And (DictVirtualAcc.Exists(bankID) = True) Then
         Dim key     As Variant
         For Each key In DictVirtualAcc(bankID)

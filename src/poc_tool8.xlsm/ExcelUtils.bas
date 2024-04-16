@@ -199,16 +199,15 @@ Public Function ConvToColTSSummary(colSummary As String) As String
     ConvToColTSSummary = trans
 End Function
 
-Public Function ConvToBankCode(colSerial As String) As String
+Public Function ConvToBankCode(colBankcat As String) As String
     Dim bankCode As String
-    If colSerial = "" Then
+    If colBankcat = "" Then
         bankCode = ""
         ConvToBankCode = bankCode
         Exit Function
     End If
 
-    bankCode = Left(colSerial, 3)
-    ConvToBankCode = bankCode
+    ConvToBankCode = colBankcat
 End Function
 
 ' �ѼơG Note, Store, Clerk, Summary
